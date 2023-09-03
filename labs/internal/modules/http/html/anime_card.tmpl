@@ -1,0 +1,14 @@
+{{ define "anime card" }}
+<div class="col-3">
+    <b class="d-block">{{ .Title }}</b>
+    <image src="{{ .ImageURL }}" />
+    <table>
+        <tr><td>Type:</td><td>{{ .Type }}</td></tr>
+        <tr><td>Source:</td><td>{{ .Source }}</td></tr>
+        <tr><td>Studio:</td><td>{{ .Studio }}</td></tr>
+        <tr><td>Genres:</td><td>{{ .Genres }}</td></tr>
+        <tr><td>Duration:</td><td>{{ .Duration }}</td></tr>
+        <tr><td>Year:</td><td>{{ .Year }}</td></tr>
+    </table>
+</div>
+{{ end }}

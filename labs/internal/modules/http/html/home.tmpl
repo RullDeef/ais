@@ -1,0 +1,45 @@
+{{ define "title" }}
+    Anime List
+{{ end }}
+
+{{ define "content" }}
+<div class="container">
+    <div class="row mb-4">
+        {{ range .Animes }}
+            {{ template "anime card" . }}
+        {{ end }}
+    </div>
+
+    <div class="d-flex justify-content-center">
+        <nav aria-label="page navigation">
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ .FirstPage }}">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {{ range .Pages }}
+                    {{ if .Current }}
+                        <li class="page-item active">
+                            <a class="page-link" href="?page={{ .Index }}">
+                                {{ .Index }}
+                            </a>
+                        </li>
+                    {{ else }}
+                        <li class="page-item {{ if .Elipsised }} disabled {{ end }}">
+                            <a class="page-link" href="?page={{ .Index }}">
+                                {{ .Index }}
+                            </a>
+                        </li>
+                    {{ end }}
+                {{ end }}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ .LastPage }}">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{{ end }}
