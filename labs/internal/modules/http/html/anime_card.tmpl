@@ -1,6 +1,39 @@
 {{ define "anime card" }}
 <div class="col-3">
-    <b class="d-block">{{ .Title }}</b>
+    <div class="d-flex justify-content-between">
+        <b>{{ .Title }}</b>
+        {{ if .Liked }}
+        <div class="btn btn-outline-primary btn-sm">
+            <a id="clear-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-up"></i>
+            </a>
+            +1
+            <a id="unfav-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-down"></i>
+            </a>
+        </div>
+        {{ else if .Disliked }}
+        <div class="btn btn-outline-danger btn-sm">
+            <a id="fav-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-up"></i>
+            </a>
+            -1
+            <a id="clear-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-down"></i>
+            </a>
+        </div>
+        {{ else }}
+        <div class="btn btn-outline-info btn-sm">
+            <a id="fav-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-up"></i>
+            </a>
+            0
+            <a id="unfav-btn-{{ .Id }}">
+                <i class="fa fa-thumbs-down"></i>
+            </a>
+        </div>
+        {{ end }}
+    </div>
     <image src="{{ .ImageURL }}" />
     <table>
         <tr><td>Type:</td><td>{{ .Type }}</td></tr>
@@ -10,5 +43,29 @@
         <tr><td>Duration:</td><td>{{ .Duration }}</td></tr>
         <tr><td>Year:</td><td>{{ .Year }}</td></tr>
     </table>
+    <script>
+        window.addEventListener('load', function() {
+            const likeBtn = document.querySelector('#fav-btn-{{ .Id }}')
+            if (likeBtn != null)
+                likeBtn.onclick = async function(e) {
+                    await fetch('/api/animes/{{ .Id }}?mark=fav')
+                    location.reload()
+                }
+
+            const disLikeBtn = document.querySelector('#unfav-btn-{{ .Id }}')
+            if (disLikeBtn != null)
+                disLikeBtn.onclick = async function(e) {
+                    await fetch('/api/animes/{{ .Id }}?mark=unfav')
+                    location.reload()
+                }
+
+            const clearBtn = document.querySelector('#clear-btn-{{ .Id }}')
+            if (clearBtn != null)
+                clearBtn.onclick = async function(e) {
+                    await fetch('/api/animes/{{ .Id }}?mark=clear')
+                    location.reload()
+                }
+        })
+    </script>
 </div>
 {{ end }}

@@ -1,5 +1,10 @@
 package model
 
+const (
+	PreferenceMarkFavourite   = 1
+	PreferenceMarkUnfavourite = -1
+)
+
 type Anime struct {
 	Id       uint64
 	Title    string
@@ -10,6 +15,11 @@ type Anime struct {
 	Genres   []string
 	Duration float32
 	Year     uint32
+}
+
+type PreferenceMark struct {
+	AnimeId    uint64
+	MarkWeight int
 }
 
 type AnimeLoader interface {

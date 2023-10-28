@@ -16,10 +16,12 @@ type AnimeDTO struct {
 	Genres   string
 	Duration string
 	Year     string
+	Liked    bool
+	Disliked bool
 }
 
-func NewAnimeDTO(anime model.Anime) AnimeDTO {
-	return AnimeDTO{
+func NewAnimeDTO(anime model.Anime, mark model.PreferenceMark) AnimeDTO {
+	dto := AnimeDTO{
 		Id:       anime.Id,
 		Title:    anime.Title,
 		ImageURL: anime.ImageURL,
@@ -30,4 +32,11 @@ func NewAnimeDTO(anime model.Anime) AnimeDTO {
 		Duration: fmt.Sprintf("%.0f min", anime.Duration),
 		Year:     fmt.Sprintf("%d", anime.Year),
 	}
+	switch mark.MarkWeight {
+	case model.PreferenceMarkFavourite:
+		dto.Liked = true
+	case model.PreferenceMarkUnfavourite:
+		dto.Disliked = true
+	}
+	return dto
 }

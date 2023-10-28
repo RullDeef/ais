@@ -7,28 +7,36 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type Server struct {
 	logger       *zap.SugaredLogger
-	mux          *http.ServeMux
+	engine       *gin.Engine
 	animeService *service.AnimeService
 }
 
-func NewServer(logger *zap.SugaredLogger, am *AnimeMux, animeService *service.AnimeService) *Server {
+func NewServer(logger *zap.SugaredLogger, animeMux *AnimeMux, animeService *service.AnimeService) *Server {
+	r := gin.Default()
 	s := Server{
 		logger:       logger,
-		mux:          http.NewServeMux(),
+		engine:       r,
 		animeService: animeService,
 	}
 
-	// /api/animes?page=N
-	s.mux.Handle("/api/animes/", http.StripPrefix("/api/animes", am))
+	r.Use(func(ctx *gin.Context) {
+		defer ctx.Header("Cache-Control", "no-cache")
+		ctx.Next()
+	})
 
-	s.mux.Handle("/animes/", http.HandlerFunc(s.getAnimesPage))
+	animeMux.AssignHandlers(r.Group("/api"))
 
-	s.mux.Handle("/", http.RedirectHandler("/animes/", http.StatusMovedPermanently))
+	s.engine.GET("/animes", s.getAnimesPage)
+
+	s.engine.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/animes")
+	})
 
 	return &s
 }
@@ -36,13 +44,13 @@ func NewServer(logger *zap.SugaredLogger, am *AnimeMux, animeService *service.An
 func (s *Server) Run(address string) error {
 	s.logger.Infow("Run", "address", address)
 
-	return http.ListenAndServe(address, s.mux)
+	return s.engine.Run(address)
 }
 
-func (s *Server) getAnimesPage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getAnimesPage(c *gin.Context) {
 	const maxPages = 9
 
-	currentPage, err := strconv.ParseInt(r.FormValue("page"), 10, 64)
+	currentPage, err := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
 	if err != nil {
 		currentPage = 1
 	}
@@ -52,10 +60,11 @@ func (s *Server) getAnimesPage(w http.ResponseWriter, r *http.Request) {
 
 	animeDTOs := make([]dto.AnimeDTO, len(animes))
 	for i, anime := range animes {
-		animeDTOs[i] = dto.NewAnimeDTO(anime)
+		animeDTOs[i] = dto.NewAnimeDTO(anime, s.animeService.GetPreference(anime.Id))
 	}
 
-	layout.HomeLayout(w, layout.HomeLayoutParams{
+	c.Status(http.StatusOK)
+	layout.HomeLayout(c.Writer, layout.HomeLayoutParams{
 		Animes:    animeDTOs,
 		Pages:     layout.FormatPages(totalPages, maxPages, int(currentPage)),
 		FirstPage: 1,

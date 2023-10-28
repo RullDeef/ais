@@ -1,0 +1,11 @@
+version: '3'
+services:
+  app:
+    image: golang:1.21-alpine
+    container_name: anime_service
+    volumes:
+      - .:/usr/src/app:ro
+    working_dir: /usr/src/app
+    command: go run ./cmd/app
+    ports:
+      - "8080:8080"
