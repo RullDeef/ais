@@ -15,6 +15,9 @@
             <li class="nav-item">
                 <a href="/preferences" class="nav-link active">my prefs</a>
             </li>
+            <li class="nav-item">
+                <a href="/recomendations" class="nav-link">recomendations</a>
+            </li>
         </ul>
         <form action="#" class="nav">
             <span class="input-group rounded">
@@ -30,10 +33,14 @@
 
 {{ define "content" }}
 <div class="container">
-    <div class="row mb-4">
-        {{ range .Animes }}
-            {{ template "anime card" . }}
-        {{ end }}
-    </div>
+    {{ if .NoPreferences }}
+        <p>Use upvote nd downvote buttons to select most prefered and least prefered animes from list!</p>
+    {{ else }}
+        <div class="row mb-4">
+            {{ range .Animes }}
+                {{ template "anime card" . }}
+            {{ end }}
+        </div>
+    {{ end }}
 </div>
 {{ end }}

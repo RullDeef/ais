@@ -252,7 +252,7 @@ def compute_similarity(propTree: PropTree, genres1: list[str], genres2: list[str
             for j in range(len(sim1to2[i])):
                 sim += 1 - sim1to2[i][j] / max_dist
         sim /= len(gs1)
-    return min(1, jac + sim)
+    return min(1, jac + sim / 6)
 
 
 if __name__ == '__main__':

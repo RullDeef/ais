@@ -11,6 +11,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const maxPages = 9
+
 type ViewMux struct {
 	logger  *zap.SugaredLogger
 	service *service.AnimeService
@@ -26,14 +28,13 @@ func NewViewMux(logger *zap.SugaredLogger, animeService *service.AnimeService) *
 func (am *ViewMux) AssignHandlers(group *gin.RouterGroup) {
 	group.GET("/animes", am.getAnimesPage)
 	group.GET("/preferences", am.getPrefernces)
+	group.GET("/recomendations", am.getRecomendations)
 	group.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/animes")
 	})
 }
 
 func (am *ViewMux) getAnimesPage(c *gin.Context) {
-	const maxPages = 9
-
 	currentPage, err := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
 	if err != nil {
 		currentPage = 1
@@ -75,6 +76,31 @@ func (am *ViewMux) getPrefernces(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 	layout.PreferencesLayout(c.Writer, layout.PreferencesLayoutParams{
-		Animes: animeDTOs,
+		Animes:        animeDTOs,
+		NoPreferences: len(animes) == 0,
+	})
+}
+
+func (am *ViewMux) getRecomendations(c *gin.Context) {
+	currentPage, err := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
+	if err != nil {
+		currentPage = 1
+	}
+
+	totalPages := am.service.GetRecomendationTotalPages()
+	animes := am.service.GetRecomendationPage(int(currentPage))
+
+	animeDTOs := make([]dto.AnimeDTO, len(animes))
+	for i, anime := range animes {
+		animeDTOs[i] = dto.NewAnimeDTO(anime, am.service.GetPreference(anime.Id))
+	}
+
+	c.Status(http.StatusOK)
+	layout.RecomendationsLayout(c.Writer, layout.RecomendationsLayoutParams{
+		Animes:        animeDTOs,
+		Pages:         layout.FormatPages(totalPages, maxPages, int(currentPage)),
+		FirstPage:     1,
+		LastPage:      totalPages,
+		NoPreferences: len(animes) == 0,
 	})
 }

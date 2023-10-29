@@ -1,20 +1,24 @@
 package model
 
+import "time"
+
 const (
 	PreferenceMarkFavourite   = 1
 	PreferenceMarkUnfavourite = -1
 )
 
 type Anime struct {
-	Id       uint64
-	Title    string
-	ImageURL string
-	Type     string
-	Source   string
-	Studio   string
-	Genres   []string
-	Duration float32
-	Year     uint32
+	Id        uint64
+	Title     string
+	ImageURL  string
+	Type      string
+	Source    string
+	Studio    string
+	Genres    []string
+	Duration  float32
+	Year      uint32
+	AiredFrom time.Time
+	AiredTo   time.Time
 }
 
 type PreferenceMark struct {

@@ -13,7 +13,8 @@ var preferencesTemplate = template.Must(template.ParseFiles(
 ))
 
 type PreferencesLayoutParams struct {
-	Animes []dto.AnimeDTO
+	Animes        []dto.AnimeDTO
+	NoPreferences bool
 }
 
 func PreferencesLayout(w io.Writer, params PreferencesLayoutParams) error {
