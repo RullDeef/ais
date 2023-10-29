@@ -6,7 +6,8 @@ import (
 
 var Module = fx.Module("http",
 	fx.Provide(
-		NewAnimeMux,
+		NewApiMux,
+		NewViewMux,
 		NewServer,
 	),
 )

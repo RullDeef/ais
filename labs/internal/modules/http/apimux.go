@@ -10,19 +10,19 @@ import (
 	"go.uber.org/zap"
 )
 
-type AnimeMux struct {
+type ApiMux struct {
 	logger  *zap.SugaredLogger
 	service *service.AnimeService
 }
 
-func NewAnimeMux(logger *zap.SugaredLogger, service *service.AnimeService) *AnimeMux {
-	return &AnimeMux{
+func NewApiMux(logger *zap.SugaredLogger, service *service.AnimeService) *ApiMux {
+	return &ApiMux{
 		logger:  logger,
 		service: service,
 	}
 }
 
-func (am *AnimeMux) AssignHandlers(routerGroup *gin.RouterGroup) {
+func (am *ApiMux) AssignHandlers(routerGroup *gin.RouterGroup) {
 	// /api/animes/{anime_id}?mark=[fav,unfav,clear]
 	routerGroup.GET("/animes/:anime_id", am.UpdateMark)
 	routerGroup.GET("/animes/:anime_id/", am.UpdateMark)
@@ -31,7 +31,7 @@ func (am *AnimeMux) AssignHandlers(routerGroup *gin.RouterGroup) {
 	routerGroup.GET("/animes", am.getPage)
 }
 
-func (am *AnimeMux) getPage(c *gin.Context) {
+func (am *ApiMux) getPage(c *gin.Context) {
 	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
 	if err != nil || page < 1 {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -42,7 +42,7 @@ func (am *AnimeMux) getPage(c *gin.Context) {
 	json.NewEncoder(c.Writer).Encode(animes)
 }
 
-func (am *AnimeMux) UpdateMark(c *gin.Context) {
+func (am *ApiMux) UpdateMark(c *gin.Context) {
 	am.logger.Infow("UpdateMark")
 	animeId, err := strconv.ParseUint(c.Param("anime_id"), 10, 64)
 	if err != nil {

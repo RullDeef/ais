@@ -13,10 +13,12 @@ var homeTemplate = template.Must(template.ParseFiles(
 ))
 
 type HomeLayoutParams struct {
-	Animes    []dto.AnimeDTO
-	Pages     []Page
-	FirstPage int
-	LastPage  int
+	Animes         []dto.AnimeDTO
+	Pages          []Page
+	FirstPage      int
+	LastPage       int
+	SearchQuery    string
+	IsSearchResult bool
 }
 
 func HomeLayout(w io.Writer, params HomeLayoutParams) error {

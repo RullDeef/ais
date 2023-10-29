@@ -13,6 +13,10 @@ type Page struct {
 // ... 7 8 9 [10] 11 12 13 ... (max < total && curr > (max + 1)/2)
 // ... 7 8 9 [10] 11 12 13 14 (max < total && curr > (max + 1)/2 && curr + (max + 1)/2 >= total)
 func FormatPages(totalPages int, maxPages int, currentPage int) []Page {
+	maxPages = min(totalPages, maxPages)
+	// println("totalPages ", totalPages)
+	// println("maxPages", maxPages)
+	// println("currPage", currentPage)
 	if totalPages <= maxPages {
 		pages := make([]Page, maxPages)
 		for i := 1; i <= totalPages; i++ {

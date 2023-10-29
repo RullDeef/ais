@@ -14,27 +14,51 @@
         <nav aria-label="page navigation">
             <ul class="pagination">
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ .FirstPage }}">
+                    <a class="page-link"
+                        {{ if .IsSearchResult }}
+                            href="?query={{ .SearchQuery }}&page={{ .FirstPage }}"
+                        {{ else }}
+                            href="?page={{ .FirstPage }}"
+                        {{ end }}
+                    >
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
                 {{ range .Pages }}
                     {{ if .Current }}
                         <li class="page-item active">
-                            <a class="page-link" href="?page={{ .Index }}">
+                            <a class="page-link"
+                                {{ if $.IsSearchResult }}
+                                    href="?query={{ $.SearchQuery }}&page={{ .Index }}"
+                                {{ else }}
+                                    href="?page={{ .Index }}"
+                                {{ end }}
+                            >
                                 {{ .Index }}
                             </a>
                         </li>
                     {{ else }}
                         <li class="page-item {{ if .Elipsised }} disabled {{ end }}">
-                            <a class="page-link" href="?page={{ .Index }}">
+                            <a class="page-link"
+                                {{ if $.IsSearchResult }}
+                                    href="?query={{ $.SearchQuery }}&page={{ .Index }}"
+                                {{ else }}
+                                    href="?page={{ .Index }}"
+                                {{ end }}
+                            >
                                 {{ .Index }}
                             </a>
                         </li>
                     {{ end }}
                 {{ end }}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ .LastPage }}">
+                    <a class="page-link"
+                        {{ if .IsSearchResult }}
+                            href="?query={{ .SearchQuery }}&page={{ .LastPage }}"
+                        {{ else }}
+                            href="?page={{ .LastPage }}"
+                        {{ end }}
+                    >
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
