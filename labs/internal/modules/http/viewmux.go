@@ -53,12 +53,6 @@ func (am *ViewMux) getAnimesPage(c *gin.Context) {
 		animeDTOs[i] = dto.NewAnimeDTO(anime, am.service.GetPreference(anime.Id))
 	}
 
-	am.logger.Infow("getAnimesPage",
-		"Pages", layout.FormatPages(totalPages, maxPages, int(currentPage)),
-		"FirstPage", 1,
-		"LastPage", totalPages,
-	)
-
 	c.Status(http.StatusOK)
 	layout.HomeLayout(c.Writer, layout.HomeLayoutParams{
 		Animes:         animeDTOs,
