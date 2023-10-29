@@ -25,6 +25,7 @@ func NewViewMux(logger *zap.SugaredLogger, animeService *service.AnimeService) *
 
 func (am *ViewMux) AssignHandlers(group *gin.RouterGroup) {
 	group.GET("/animes", am.getAnimesPage)
+	group.GET("/preferences", am.getPrefernces)
 	group.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/animes")
 	})
@@ -61,5 +62,19 @@ func (am *ViewMux) getAnimesPage(c *gin.Context) {
 		LastPage:       totalPages,
 		SearchQuery:    searchQuery,
 		IsSearchResult: searchQuery != "",
+	})
+}
+
+func (am *ViewMux) getPrefernces(c *gin.Context) {
+	animes := am.service.GetPreferencedAnimes()
+
+	animeDTOs := make([]dto.AnimeDTO, len(animes))
+	for i, anime := range animes {
+		animeDTOs[i] = dto.NewAnimeDTO(anime, am.service.GetPreference(anime.Id))
+	}
+
+	c.Status(http.StatusOK)
+	layout.PreferencesLayout(c.Writer, layout.PreferencesLayoutParams{
+		Animes: animeDTOs,
 	})
 }

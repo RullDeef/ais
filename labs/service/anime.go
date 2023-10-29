@@ -138,6 +138,18 @@ func (a *AnimeService) GetPreference(animeId uint64) model.PreferenceMark {
 	}
 }
 
+func (a *AnimeService) GetPreferencedAnimes() []model.Anime {
+	res := make([]model.Anime, 0, len(a.preferenceMarks))
+	for _, mark := range a.preferenceMarks {
+		for _, anime := range a.animes {
+			if anime.Id == mark.AnimeId {
+				res = append(res, anime)
+			}
+		}
+	}
+	return res
+}
+
 // Search state handling
 
 func (a *AnimeService) ClearSearch() {

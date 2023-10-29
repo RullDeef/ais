@@ -43,7 +43,6 @@ func (am *ApiMux) getPage(c *gin.Context) {
 }
 
 func (am *ApiMux) UpdateMark(c *gin.Context) {
-	am.logger.Infow("UpdateMark")
 	animeId, err := strconv.ParseUint(c.Param("anime_id"), 10, 64)
 	if err != nil {
 		am.logger.Error(err)
