@@ -16,6 +16,7 @@ type Anime struct {
 	Studio    string
 	Genres    []string
 	Duration  float32
+	Episodes  uint32
 	Year      uint32
 	AiredFrom time.Time
 	AiredTo   time.Time

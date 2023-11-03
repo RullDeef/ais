@@ -50,6 +50,11 @@ func (c *CSVAnimeLoader) Load() ([]model.Anime, error) {
 			aired[1] = "Jan 1, 2024"
 		}
 
+		episodes, err := strconv.ParseUint(record[8], 10, 32)
+		if err != nil {
+			return nil, err
+		}
+
 		animes[i] = model.Anime{
 			Id:        id,
 			Title:     record[1],
@@ -59,6 +64,7 @@ func (c *CSVAnimeLoader) Load() ([]model.Anime, error) {
 			Studio:    record[27],
 			Genres:    strings.Split(record[28], ", "),
 			Duration:  float32(duration),
+			Episodes:  uint32(episodes),
 			Year:      uint32(year),
 			AiredFrom: parseDateTime(aired[0]),
 			AiredTo:   parseDateTime(aired[1]),

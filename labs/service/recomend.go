@@ -75,8 +75,12 @@ func orderSimilars(base *model.Anime, all []model.Anime) []model.Anime {
 func similarityMetric(a1, a2 model.Anime) float64 {
 	m1 := similarityMetric_1(a1, a2)
 	m2 := similarityMetric_2(a1, a2)
+	m3 := similarityMetric_3(a1, a2)
 
-	return 0.9*m1 + 0.1*m2
+	w1, w2, w3 := 0.9, 0.5, 0.2
+	w123 := w1 + w2 + w3
+
+	return (0.9*m1 + 0.5*m2 + 0.2*m3) / w123
 }
 
 // basic metric 1 (by genres)
@@ -88,4 +92,10 @@ func similarityMetric_1(a1, a2 model.Anime) float64 {
 func similarityMetric_2(a1, a2 model.Anime) float64 {
 	t := a2.AiredFrom.Sub(a1.AiredFrom).Hours() / 24
 	return math.Exp(-math.Abs(t) / 900)
+}
+
+// basic metric 3 (by episodes count)
+func similarityMetric_3(a1, a2 model.Anime) float64 {
+	t := math.Abs(float64(a2.Episodes - a1.Episodes))
+	return math.Exp(-t / 10.0)
 }
