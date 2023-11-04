@@ -33,12 +33,14 @@
 }
 </style>
 
-<form action="/api/filter" method="POST">
+<iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+
+<form id="filter-form" action="/api/filter" method="POST" target="hiddenFrame">
     <div class="d-flex flex-column flex-shrink-0 p-3" style="width: 300px; position: absolute; left: 0">
-        <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#genres-list" aria-expanded="true" type="button">Genres</button>
-        <div class="form-check collapse show" id="genres-list">
+        <button id='genres-toggle-button' class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#genres-list" type="button" onclick="toggleGenres()">Genres</button>
+        <div class="form-check collapse" id="genres-list">
             {{ range .GenreOptions }}
-                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" />
+                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="genre" value="{{ .Label }}"/>
                 <label>{{ .Label }}</label><br />
             {{ end }}
         </div>
@@ -49,12 +51,27 @@
 
 <script>
 window.addEventListener('load', function(event) {
+    // load toggle states
+    if (localStorage.getItem('toggle-genres') == 'true') {
+        document.querySelector('#genres-list').classList.add('show')
+        document.querySelector('#genres-toggle-button').ariaExpanded = true
+    }
+
+    document.querySelector('#filter-form').addEventListener('submit', function(event) {
+        location.reload()
+    })
+
     const genreInputs = document.querySelectorAll('.filter-checkbox')
     for (let inp of genreInputs) {
-        inp.checked = localStorage.getItem(inp.id) || false
+        inp.checked = localStorage.getItem(inp.id) == "true"
         inp.addEventListener('change', genreUpdater)
     }
 })
+
+function toggleGenres(event) {
+    const shown = document.querySelector('#genres-toggle-button').ariaExpanded
+    localStorage.setItem('toggle-genres', shown)
+}
 
 function genreUpdater(event) {
     const key = event.target.id

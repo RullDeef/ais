@@ -16,7 +16,7 @@ type AnimeService struct {
 	animes []model.Anime
 
 	// specific filters
-	genreFilter *filter.SimpleGenreFilter
+	GenreFilter *filter.SimpleGenreFilter
 
 	preferenceMarks []model.PreferenceMark
 	recomended      []model.Anime
@@ -35,11 +35,11 @@ func NewAnimeService(loader model.AnimeLoader) (*AnimeService, error) {
 	service := AnimeService{
 		FilterManager:   NewFilterManager(),
 		animes:          animes,
-		genreFilter:     filter.NewSimpleGenreFilter(),
+		GenreFilter:     filter.NewSimpleGenreFilter(),
 		recomendedDirty: true,
 	}
 
-	service.FilterManager.AddFilter(service.genreFilter)
+	service.FilterManager.AddFilter(service.GenreFilter)
 
 	return &service, nil
 }
@@ -60,6 +60,7 @@ func (a *AnimeService) GetPage(page int) []model.Anime {
 		return a.GetSearchPage(page)
 	}
 	animes := a.getFilteredAnimes()
+	page = min(page, a.GetTotalPages())
 	upper := min(page*ItemsPerPage, len(animes))
 	return animes[(page-1)*ItemsPerPage : upper]
 }
@@ -171,8 +172,6 @@ func (a *AnimeService) GetSearchPage(page int) []model.Anime {
 	upper := min(page*ItemsPerPage, len(a.searchState.results))
 	return a.searchState.results[(page-1)*ItemsPerPage : upper]
 }
-
-// Filters handling
 
 // recomendations
 
