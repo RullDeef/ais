@@ -38,11 +38,35 @@
         <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#genres-list" aria-expanded="true" type="button">Genres</button>
         <div class="form-check collapse show" id="genres-list">
             {{ range .GenreOptions }}
-                <input id="{{ .ID }}" class="form-check-input" type="checkbox" value="{{ .Selected }}" />
+                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" />
                 <label>{{ .Label }}</label><br />
             {{ end }}
         </div>
         <input class="btn btn-secondary" type="submit" value="apply" />
+        <button class="btn btn-outline-danger" type="button" onclick="clearFilters()">clear all</button>
     </div>
 </form>
+
+<script>
+window.addEventListener('load', function(event) {
+    const genreInputs = document.querySelectorAll('.filter-checkbox')
+    for (let inp of genreInputs) {
+        inp.checked = localStorage.getItem(inp.id) || false
+        inp.addEventListener('change', genreUpdater)
+    }
+})
+
+function genreUpdater(event) {
+    const key = event.target.id
+    const value = event.target.checked
+    localStorage.setItem(key, value)
+}
+
+function clearFilters() {
+    for (let input of document.querySelectorAll('.filter-checkbox')) {
+        input.checked = false
+        localStorage.removeItem(input.id)
+    }
+}
+</script>
 {{ end }}
