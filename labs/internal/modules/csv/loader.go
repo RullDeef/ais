@@ -10,13 +10,29 @@ import (
 	"time"
 )
 
+var filteredGenres []string = []string{
+	"Dementia",
+	"Harem",
+	"Kids",
+	"Ecchi",
+	"Shounen Ai",
+	"Yuri",
+	"Hentai",
+	"Yaoi",
+	"Shoujo Ai",
+}
+
 type CSVAnimeLoader struct {
-	filename string
+	filename       string
+	filterAdult    bool
+	updateImageCDN bool
 }
 
 func NewAnimeLoader(filename string) *CSVAnimeLoader {
 	return &CSVAnimeLoader{
-		filename: filename,
+		filename:       filename,
+		filterAdult:    true,
+		updateImageCDN: true,
 	}
 }
 
@@ -76,6 +92,16 @@ func (c *CSVAnimeLoader) Load() ([]model.Anime, error) {
 		})
 	}
 
+	if c.filterAdult {
+		animes = filterGenres(animes)
+	}
+
+	if c.updateImageCDN {
+		for i, anime := range animes {
+			animes[i].ImageURL = strings.ReplaceAll(anime.ImageURL, "myanimelist.cdn-dena.com", "cdn.myanimelist.net")
+		}
+	}
+
 	return animes, nil
 }
 
@@ -101,4 +127,21 @@ func parseDateTime(st string) time.Time {
 		return t
 	}
 	return time.Now()
+}
+
+func filterGenres(animes []model.Anime) []model.Anime {
+	filtered := make([]model.Anime, 0)
+	for _, anime := range animes {
+		hasFilteredGenre := false
+		for _, genre := range anime.Genres {
+			if slices.Contains(filteredGenres, genre) {
+				hasFilteredGenre = true
+				break
+			}
+		}
+		if !hasFilteredGenre && len(anime.Genres) > 0 {
+			filtered = append(filtered, anime)
+		}
+	}
+	return filtered
 }

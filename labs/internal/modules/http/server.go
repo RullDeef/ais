@@ -29,6 +29,8 @@ func NewServer(logger *zap.SugaredLogger, apiMux *ApiMux, viewMux *ViewMux, anim
 	apiMux.AssignHandlers(r.Group("/api"))
 	viewMux.AssignHandlers(r.Group("/"))
 
+	r.StaticFile("favicon.ico", "./static/favicon.ico")
+
 	return &s
 }
 

@@ -2,33 +2,27 @@ package service
 
 import (
 	"anicomend/model"
+	"anicomend/service/filter"
 	"slices"
-	"strings"
 )
 
 const (
 	ItemsPerPage = 12
 )
 
-var filteredGenres []string = []string{
-	"Dementia",
-	"Harem",
-	"Kids",
-	"Ecchi",
-	"Shounen Ai",
-	"Yuri",
-	"Hentai",
-	"Yaoi",
-	"Shoujo Ai",
-}
-
 type AnimeService struct {
-	animes          []model.Anime
-	preferenceMarks []model.PreferenceMark
+	*FilterManager
 
+	animes []model.Anime
+
+	// specific filters
+	genreFilter *filter.SimpleGenreFilter
+
+	preferenceMarks []model.PreferenceMark
 	recomended      []model.Anime
 	recomendedDirty bool
 
+	// search works independently from filters and recomendations
 	searchState *SearchState
 }
 
@@ -38,50 +32,36 @@ func NewAnimeService(loader model.AnimeLoader) (*AnimeService, error) {
 		return nil, err
 	}
 
-	// filter adult anime
-	animes = filterGenres(animes)
-
-	// transform image cdn
-	for i, anime := range animes {
-		animes[i].ImageURL = strings.ReplaceAll(anime.ImageURL, "myanimelist.cdn-dena.com", "cdn.myanimelist.net")
+	service := AnimeService{
+		FilterManager:   NewFilterManager(),
+		animes:          animes,
+		genreFilter:     filter.NewSimpleGenreFilter(),
+		recomendedDirty: true,
 	}
 
-	return &AnimeService{
-		animes:          animes,
-		recomendedDirty: true,
-	}, nil
+	service.FilterManager.AddFilter(service.genreFilter)
+
+	return &service, nil
 }
 
-func filterGenres(animes []model.Anime) []model.Anime {
-	filtered := make([]model.Anime, 0)
-	for _, anime := range animes {
-		hasFilteredGenre := false
-		for _, genre := range anime.Genres {
-			if slices.Contains(filteredGenres, genre) {
-				hasFilteredGenre = true
-				break
-			}
-		}
-		if !hasFilteredGenre && len(anime.Genres) > 0 {
-			filtered = append(filtered, anime)
-		}
-	}
-	return filtered
+func (a *AnimeService) getFilteredAnimes() []model.Anime {
+	return a.ApplyAllFilters(a.animes)
 }
 
 func (a *AnimeService) GetTotalPages() int {
 	if a.searchState != nil {
 		return a.GetSearchTotalPages()
 	}
-	return (len(a.animes) + ItemsPerPage - 1) / ItemsPerPage
+	return (len(a.getFilteredAnimes()) + ItemsPerPage - 1) / ItemsPerPage
 }
 
 func (a *AnimeService) GetPage(page int) []model.Anime {
 	if a.searchState != nil {
 		return a.GetSearchPage(page)
 	}
-	upper := min(page*ItemsPerPage, len(a.animes))
-	return a.animes[(page-1)*ItemsPerPage : upper]
+	animes := a.getFilteredAnimes()
+	upper := min(page*ItemsPerPage, len(animes))
+	return animes[(page-1)*ItemsPerPage : upper]
 }
 
 // Preferences handling
@@ -192,6 +172,8 @@ func (a *AnimeService) GetSearchPage(page int) []model.Anime {
 	return a.searchState.results[(page-1)*ItemsPerPage : upper]
 }
 
+// Filters handling
+
 // recomendations
 
 func (a *AnimeService) GetRecomendationTotalPages() int {
@@ -213,5 +195,5 @@ func (a *AnimeService) GetRecomendationPage(page int) []model.Anime {
 }
 
 func (a *AnimeService) regenerateRecomendations() {
-	a.recomended = recomend(a.animes, a.preferenceMarks)
+	a.recomended = recomend(a.getFilteredAnimes(), a.preferenceMarks)
 }
