@@ -73,7 +73,6 @@ func (am *ApiMux) updateMark(c *gin.Context) {
 func (am *ApiMux) applyFilters(c *gin.Context) {
 	body, _ := io.ReadAll(c.Request.Body)
 	println(string(body))
-
 	c.Request.Body = io.NopCloser(bytes.NewReader(body))
 
 	var form FiltersForm
@@ -86,9 +85,15 @@ func (am *ApiMux) applyFilters(c *gin.Context) {
 		am.service.GenreFilter.Select(genre)
 	}
 
+	am.service.DurationFilter.ResetState()
+	am.service.DurationFilter.SetMin(form.DurationMin)
+	am.service.DurationFilter.SetMax(form.DurationMax)
+
 	c.Status(http.StatusOK)
 }
 
 type FiltersForm struct {
-	Genres []string `form:"genre"`
+	Genres      []string `form:"genre"`
+	DurationMin int      `form:"duration-min"`
+	DurationMax int      `form:"duration-max"`
 }

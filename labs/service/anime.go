@@ -4,6 +4,8 @@ import (
 	"anicomend/model"
 	"anicomend/service/filter"
 	"slices"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -16,30 +18,34 @@ type AnimeService struct {
 	animes []model.Anime
 
 	// specific filters
-	GenreFilter *filter.SimpleGenreFilter
+	GenreFilter    *filter.SimpleGenreFilter
+	DurationFilter *filter.DurationRangeFilter
 
 	preferenceMarks []model.PreferenceMark
 	recomended      []model.Anime
-	recomendedDirty bool
 
 	// search works independently from filters and recomendations
 	searchState *SearchState
+
+	logger *zap.SugaredLogger
 }
 
-func NewAnimeService(loader model.AnimeLoader) (*AnimeService, error) {
+func NewAnimeService(loader model.AnimeLoader, logger *zap.SugaredLogger) (*AnimeService, error) {
 	animes, err := loader.Load()
 	if err != nil {
 		return nil, err
 	}
 
 	service := AnimeService{
-		FilterManager:   NewFilterManager(),
-		animes:          animes,
-		GenreFilter:     filter.NewSimpleGenreFilter(),
-		recomendedDirty: true,
+		FilterManager:  NewFilterManager(),
+		animes:         animes,
+		GenreFilter:    filter.NewSimpleGenreFilter(),
+		DurationFilter: filter.NewDurationRangeFilter(),
+		logger:         logger,
 	}
 
 	service.FilterManager.AddFilter(service.GenreFilter)
+	service.FilterManager.AddFilter(service.DurationFilter)
 
 	return &service, nil
 }
@@ -61,14 +67,14 @@ func (a *AnimeService) GetPage(page int) []model.Anime {
 	}
 	animes := a.getFilteredAnimes()
 	page = min(page, a.GetTotalPages())
+	lower := max((page-1)*ItemsPerPage, 0)
 	upper := min(page*ItemsPerPage, len(animes))
-	return animes[(page-1)*ItemsPerPage : upper]
+	return animes[lower:upper]
 }
 
 // Preferences handling
 
 func (a *AnimeService) MarkAsFavorite(animeId uint64) {
-	a.recomendedDirty = true
 	// check if mark already set
 	for i, anime := range a.preferenceMarks {
 		if anime.AnimeId == animeId {
@@ -80,6 +86,7 @@ func (a *AnimeService) MarkAsFavorite(animeId uint64) {
 		if anime.Id == animeId {
 			a.preferenceMarks = append(a.preferenceMarks, model.PreferenceMark{
 				AnimeId:    animeId,
+				Anime:      anime,
 				MarkWeight: model.PreferenceMarkFavourite,
 			})
 			break
@@ -88,7 +95,6 @@ func (a *AnimeService) MarkAsFavorite(animeId uint64) {
 }
 
 func (a *AnimeService) MarkAsUnfavorite(animeId uint64) {
-	a.recomendedDirty = true
 	// check if mark already set
 	for i, anime := range a.preferenceMarks {
 		if anime.AnimeId == animeId {
@@ -100,6 +106,7 @@ func (a *AnimeService) MarkAsUnfavorite(animeId uint64) {
 		if anime.Id == animeId {
 			a.preferenceMarks = append(a.preferenceMarks, model.PreferenceMark{
 				AnimeId:    animeId,
+				Anime:      anime,
 				MarkWeight: model.PreferenceMarkUnfavourite,
 			})
 			break
@@ -108,7 +115,6 @@ func (a *AnimeService) MarkAsUnfavorite(animeId uint64) {
 }
 
 func (a *AnimeService) ClearPreferenceMark(animeId uint64) {
-	a.recomendedDirty = true
 	for i, anime := range a.preferenceMarks {
 		if anime.AnimeId == animeId {
 			a.preferenceMarks = slices.Delete(a.preferenceMarks, i, i+1)
@@ -118,7 +124,6 @@ func (a *AnimeService) ClearPreferenceMark(animeId uint64) {
 }
 
 func (a *AnimeService) ClearAllPreferences() {
-	a.recomendedDirty = true
 	a.preferenceMarks = nil
 }
 
@@ -176,23 +181,21 @@ func (a *AnimeService) GetSearchPage(page int) []model.Anime {
 // recomendations
 
 func (a *AnimeService) GetRecomendationTotalPages() int {
-	if a.recomendedDirty {
-		a.regenerateRecomendations()
-		a.recomendedDirty = false
-	}
+	a.regenerateRecomendations()
 	return (len(a.recomended) + ItemsPerPage - 1) / ItemsPerPage
 }
 
 func (a *AnimeService) GetRecomendationPage(page int) []model.Anime {
-	if a.recomendedDirty {
-		a.regenerateRecomendations()
-		a.recomendedDirty = false
-	}
+	a.regenerateRecomendations()
 	page = min(page, max(1, a.GetRecomendationTotalPages()))
 	upper := min(page*ItemsPerPage, len(a.recomended))
 	return a.recomended[(page-1)*ItemsPerPage : upper]
 }
 
 func (a *AnimeService) regenerateRecomendations() {
-	a.recomended = recomend(a.getFilteredAnimes(), a.preferenceMarks)
+	var err error
+	a.recomended, err = recomend(a.getFilteredAnimes(), a.preferenceMarks)
+	if err != nil {
+		a.logger.Error(err)
+	}
 }

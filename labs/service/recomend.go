@@ -2,36 +2,42 @@ package service
 
 import (
 	"anicomend/model"
+	"errors"
 	"math"
 	"slices"
 )
 
+var (
+	ErrNothingToRecomend = errors.New("nothing to recomend")
+)
+
 var gs *model.GenreSimilaritier
 
-func recomend(all []model.Anime, prefs []model.PreferenceMark) []model.Anime {
+func recomend(all []model.Anime, prefs []model.PreferenceMark) (res []model.Anime, err error) {
 	if gs == nil {
 		gs = model.NewGenreSimilaritier()
 	}
 
-	if len(prefs) == 0 {
-		return nil
+	if len(prefs) == 0 || len(all) == 0 {
+		return nil, nil
 	}
 
-	animeMap := make(map[uint64]*model.Anime, len(all))
-	for _, a := range all {
-		a := a
-		animeMap[a.Id] = &a
-	}
+	defer func() {
+		if e := recover(); e != nil {
+			res = nil
+			err = e.(error)
+		}
+	}()
 
 	// make flow from each preference and find best matches to it
 	flows := make([][]model.Anime, len(prefs))
 	for i, p := range prefs {
 		if p.MarkWeight == model.PreferenceMarkFavourite {
-			flows[i] = orderSimilars(animeMap[p.AnimeId], all)
+			flows[i] = orderSimilars(&p.Anime, all)
 		}
 	}
 
-	res := make([]model.Anime, 0)
+	res = make([]model.Anime, 0)
 	resAnimeIds := make(map[uint64]struct{}, len(all))
 
 	// do not put animes from prefs in result
@@ -53,7 +59,7 @@ func recomend(all []model.Anime, prefs []model.PreferenceMark) []model.Anime {
 		}
 	}
 
-	return res
+	return res, nil
 }
 
 func orderSimilars(base *model.Anime, all []model.Anime) []model.Anime {

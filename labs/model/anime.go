@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	PreferenceMarkFavourite   = 1
@@ -24,6 +26,7 @@ type Anime struct {
 
 type PreferenceMark struct {
 	AnimeId    uint64
+	Anime      Anime
 	MarkWeight int
 }
 

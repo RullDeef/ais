@@ -40,9 +40,16 @@
         <button id='genres-toggle-button' class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#genres-list" type="button" onclick="toggleGenres()">Genres</button>
         <div class="form-check collapse" id="genres-list">
             {{ range .GenreOptions }}
-                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="genre" value="{{ .Label }}"/>
+                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="genre" value="{{ .Label }}" onchange="genreUpdater(event)" />
                 <label>{{ .Label }}</label><br />
             {{ end }}
+        </div>
+        <div>Episode duration:</div>
+        <div data-role="rangeslider">
+            <input id="input-duration-min" type="range" name="duration-min" id="duration-min" value="0" min="0" max="163" oninput="durationUpdater(event)">
+            <label id="label-duration-min" for="duration-min">at least 0 min.</label><br />
+            <input id="input-duration-max" type="range" name="duration-max" id="duration-max" value="163" min="0" max="163" oninput="durationUpdater(event)">
+            <label id="label-duration-max" for="duration-max">at most 163 min.</label><br />
         </div>
         <input class="btn btn-secondary" type="submit" value="apply" />
         <button class="btn btn-outline-danger" type="button" onclick="clearFilters()">clear all</button>
@@ -51,7 +58,7 @@
 
 <script>
 window.addEventListener('load', function(event) {
-    // load toggle states
+    // load toggle states for genres
     if (localStorage.getItem('toggle-genres') == 'true') {
         document.querySelector('#genres-list').classList.add('show')
         document.querySelector('#genres-toggle-button').ariaExpanded = true
@@ -64,8 +71,12 @@ window.addEventListener('load', function(event) {
     const genreInputs = document.querySelectorAll('.filter-checkbox')
     for (let inp of genreInputs) {
         inp.checked = localStorage.getItem(inp.id) == "true"
-        inp.addEventListener('change', genreUpdater)
     }
+
+    const durMin = document.querySelector('#input-duration-min').value = parseInt(localStorage.getItem('duration-min') || '0')
+    const durMax = document.querySelector('#input-duration-max').value = parseInt(localStorage.getItem('duration-max') || '163')
+    document.querySelector('#label-duration-min').innerText = `at least ${durMin} min.`
+    document.querySelector('#label-duration-max').innerText = `at most ${durMax} min.`
 })
 
 function toggleGenres(event) {
@@ -79,11 +90,31 @@ function genreUpdater(event) {
     localStorage.setItem(key, value)
 }
 
+function durationUpdater(event) {
+    const minRange = document.querySelector('#input-duration-min').value
+    const maxRange = document.querySelector('#input-duration-max').value
+    const minLabel = document.querySelector('#label-duration-min')
+    const maxLabel = document.querySelector('#label-duration-max')
+
+    localStorage.setItem('duration-min', Math.min(minRange, maxRange))
+    localStorage.setItem('duration-max', Math.max(minRange, maxRange))
+
+    minLabel.innerText = `at least ${minRange} min.`
+    maxLabel.innerText = `at most ${maxRange} min.`
+}
+
 function clearFilters() {
     for (let input of document.querySelectorAll('.filter-checkbox')) {
         input.checked = false
         localStorage.removeItem(input.id)
     }
+
+    document.querySelector('#input-duration-min').value = 0
+    document.querySelector('#input-duration-max').value = 163
+    document.querySelector('#label-duration-min').innerText = `at least 0 min.`
+    document.querySelector('#label-duration-max').innerText = `at most 163 min.`
+    localStorage.removeItem('duration-min')
+    localStorage.removeItem('duration-max')
 }
 </script>
 {{ end }}
