@@ -56,14 +56,18 @@ func (am *ViewMux) getAnimesPage(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
-	layout.HomeLayout(c.Writer, layout.HomeLayoutParams{
+	err = layout.HomeLayout(c.Writer, layout.HomeLayoutParams{
 		Animes:         animeDTOs,
 		Pages:          layout.FormatPages(totalPages, maxPages, int(currentPage)),
 		FirstPage:      1,
 		LastPage:       totalPages,
 		SearchQuery:    searchQuery,
 		IsSearchResult: searchQuery != "",
+		FilterParams:   layout.NewFilterParams(),
 	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (am *ViewMux) getPrefernces(c *gin.Context) {
@@ -102,5 +106,6 @@ func (am *ViewMux) getRecomendations(c *gin.Context) {
 		FirstPage:     1,
 		LastPage:      totalPages,
 		NoPreferences: len(animes) == 0,
+		FilterParams:  layout.NewFilterParams(),
 	})
 }

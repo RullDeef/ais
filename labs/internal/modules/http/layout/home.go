@@ -8,6 +8,7 @@ import (
 
 var homeTemplate = template.Must(template.ParseFiles(
 	"internal/modules/http/html/layout.tmpl",
+	"internal/modules/http/html/filters.tmpl",
 	"internal/modules/http/html/home.tmpl",
 	"internal/modules/http/html/anime_card.tmpl",
 ))
@@ -19,6 +20,7 @@ type HomeLayoutParams struct {
 	LastPage       int
 	SearchQuery    string
 	IsSearchResult bool
+	FilterParams   FilterParams
 }
 
 func HomeLayout(w io.Writer, params HomeLayoutParams) error {

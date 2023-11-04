@@ -8,6 +8,7 @@ import (
 
 var recomendationsTemplate = template.Must(template.ParseFiles(
 	"internal/modules/http/html/layout.tmpl",
+	"internal/modules/http/html/filters.tmpl",
 	"internal/modules/http/html/recomendations.tmpl",
 	"internal/modules/http/html/anime_card.tmpl",
 ))
@@ -18,6 +19,7 @@ type RecomendationsLayoutParams struct {
 	FirstPage     int
 	LastPage      int
 	NoPreferences bool
+	FilterParams  FilterParams
 }
 
 func RecomendationsLayout(w io.Writer, params RecomendationsLayoutParams) error {

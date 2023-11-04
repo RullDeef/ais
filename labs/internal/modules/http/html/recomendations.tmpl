@@ -32,6 +32,7 @@
 {{ end }}
 
 {{ define "content" }}
+{{ template "filters-panel" .FilterParams }}
 <div class="container">
     {{ if .NoPreferences }}
         <p>Please, select most prefered or least prefered animes to get recomendations!</p>

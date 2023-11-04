@@ -26,12 +26,13 @@
                     <i class="fas fa-search"></i>
                 </button>
             </span>
-        <form>
+        </form>
     </header>
 </div>
 {{ end }}
 
 {{ define "content" }}
+{{ template "filters-panel" .FilterParams }}
 <div class="container">
     <div class="row mb-4">
         {{ range .Animes }}
