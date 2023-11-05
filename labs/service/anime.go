@@ -3,6 +3,7 @@ package service
 import (
 	"anicomend/model"
 	"anicomend/service/filter"
+	"errors"
 	"slices"
 
 	"go.uber.org/zap"
@@ -20,6 +21,7 @@ type AnimeService struct {
 	// specific filters
 	GenreFilter    *filter.SimpleGenreFilter
 	DurationFilter *filter.DurationRangeFilter
+	AiredFilter    *filter.AiredRangeFilter
 
 	preferenceMarks []model.PreferenceMark
 	recomended      []model.Anime
@@ -41,11 +43,13 @@ func NewAnimeService(loader model.AnimeLoader, logger *zap.SugaredLogger) (*Anim
 		animes:         animes,
 		GenreFilter:    filter.NewSimpleGenreFilter(),
 		DurationFilter: filter.NewDurationRangeFilter(),
+		AiredFilter:    filter.NewAiredRangeFilter(),
 		logger:         logger,
 	}
 
 	service.FilterManager.AddFilter(service.GenreFilter)
 	service.FilterManager.AddFilter(service.DurationFilter)
+	service.FilterManager.AddFilter(service.AiredFilter)
 
 	return &service, nil
 }
@@ -133,20 +137,22 @@ func (a *AnimeService) GetPreference(animeId uint64) model.PreferenceMark {
 			return pref
 		}
 	}
-	return model.PreferenceMark{
-		AnimeId:    animeId,
-		MarkWeight: 0,
+	for _, anime := range a.animes {
+		if anime.Id == animeId {
+			return model.PreferenceMark{
+				AnimeId:    animeId,
+				Anime:      anime,
+				MarkWeight: 0,
+			}
+		}
 	}
+	panic(errors.New("failed to find anime by id"))
 }
 
 func (a *AnimeService) GetPreferencedAnimes() []model.Anime {
 	res := make([]model.Anime, 0, len(a.preferenceMarks))
 	for _, mark := range a.preferenceMarks {
-		for _, anime := range a.animes {
-			if anime.Id == mark.AnimeId {
-				res = append(res, anime)
-			}
-		}
+		res = append(res, mark.Anime)
 	}
 	return res
 }
@@ -188,8 +194,9 @@ func (a *AnimeService) GetRecomendationTotalPages() int {
 func (a *AnimeService) GetRecomendationPage(page int) []model.Anime {
 	a.regenerateRecomendations()
 	page = min(page, max(1, a.GetRecomendationTotalPages()))
+	lower := max(0, (page-1)*ItemsPerPage)
 	upper := min(page*ItemsPerPage, len(a.recomended))
-	return a.recomended[(page-1)*ItemsPerPage : upper]
+	return a.recomended[lower:upper]
 }
 
 func (a *AnimeService) regenerateRecomendations() {

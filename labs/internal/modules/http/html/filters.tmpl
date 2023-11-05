@@ -51,6 +51,13 @@
             <input id="input-duration-max" type="range" name="duration-max" id="duration-max" value="163" min="0" max="163" oninput="durationUpdater(event)">
             <label id="label-duration-max" for="duration-max">at most 163 min.</label><br />
         </div>
+        <div>Aired date:</div>
+        <div data-role="rangeslider">
+            <input id="input-aired-min" type="range" name="aired-min" id="aired-min" value="1942" min="1942" max="2019" oninput="airedUpdater(event)">
+            <label id="label-aired-min" for="aired-min">from 1942 y</label><br />
+            <input id="input-aired-max" type="range" name="aired-max" id="aired-max" value="2019" min="1942" max="2019" oninput="airedUpdater(event)">
+            <label id="label-aired-max" for="aired-max">until 2019 y</label><br />
+        </div>
         <input class="btn btn-secondary" type="submit" value="apply" />
         <button class="btn btn-outline-danger" type="button" onclick="clearFilters()">clear all</button>
     </div>
@@ -70,13 +77,18 @@ window.addEventListener('load', function(event) {
 
     const genreInputs = document.querySelectorAll('.filter-checkbox')
     for (let inp of genreInputs) {
-        inp.checked = localStorage.getItem(inp.id) == "true"
+        inp.checked = localStorage.getItem(inp.id) == 'true'
     }
 
     const durMin = document.querySelector('#input-duration-min').value = parseInt(localStorage.getItem('duration-min') || '0')
     const durMax = document.querySelector('#input-duration-max').value = parseInt(localStorage.getItem('duration-max') || '163')
     document.querySelector('#label-duration-min').innerText = `at least ${durMin} min.`
     document.querySelector('#label-duration-max').innerText = `at most ${durMax} min.`
+
+    const airedMin = document.querySelector('#input-aired-min').value = parseInt(localStorage.getItem('aired-min') || '1942')
+    const airedMax = document.querySelector('#input-aired-max').value = parseInt(localStorage.getItem('aired-max') || '2019')
+    document.querySelector('#label-aired-min').innerText = `from ${airedMin} y.`
+    document.querySelector('#label-aired-max').innerText = `until ${airedMax} y.`
 })
 
 function toggleGenres(event) {
@@ -103,6 +115,17 @@ function durationUpdater(event) {
     maxLabel.innerText = `at most ${maxRange} min.`
 }
 
+function airedUpdater(event) {
+    const minRange = document.querySelector('#input-aired-min').value
+    const maxRange = document.querySelector('#input-aired-max').value
+
+    localStorage.setItem('aired-min', Math.min(minRange, maxRange))
+    localStorage.setItem('aired-max', Math.max(minRange, maxRange))
+
+    document.querySelector('#label-aired-min').innerText = `from ${minRange} y.`
+    document.querySelector('#label-aired-max').innerText = `until ${maxRange} y.`
+}
+
 function clearFilters() {
     for (let input of document.querySelectorAll('.filter-checkbox')) {
         input.checked = false
@@ -115,6 +138,13 @@ function clearFilters() {
     document.querySelector('#label-duration-max').innerText = `at most 163 min.`
     localStorage.removeItem('duration-min')
     localStorage.removeItem('duration-max')
+
+    document.querySelector('#input-aired-min').value = 1942
+    document.querySelector('#input-aired-max').value = 2019
+    document.querySelector('#label-aired-min').innerText = `from 1942 y.`
+    document.querySelector('#label-aired-max').innerText = `until 2019 y.`
+    localStorage.removeItem('aired-min')
+    localStorage.removeItem('aired-max')
 }
 </script>
 {{ end }}
