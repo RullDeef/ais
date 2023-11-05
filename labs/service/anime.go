@@ -22,6 +22,7 @@ type AnimeService struct {
 	GenreFilter    *filter.SimpleGenreFilter
 	DurationFilter *filter.DurationRangeFilter
 	AiredFilter    *filter.AiredRangeFilter
+	TypeFilter     *filter.SimpleTypeFilter
 
 	preferenceMarks []model.PreferenceMark
 	recomended      []model.Anime
@@ -44,12 +45,14 @@ func NewAnimeService(loader model.AnimeLoader, logger *zap.SugaredLogger) (*Anim
 		GenreFilter:    filter.NewSimpleGenreFilter(),
 		DurationFilter: filter.NewDurationRangeFilter(),
 		AiredFilter:    filter.NewAiredRangeFilter(),
+		TypeFilter:     filter.NewSimpleTypeFilter(),
 		logger:         logger,
 	}
 
-	service.FilterManager.AddFilter(service.GenreFilter)
-	service.FilterManager.AddFilter(service.DurationFilter)
-	service.FilterManager.AddFilter(service.AiredFilter)
+	service.AddFilter(service.GenreFilter)
+	service.AddFilter(service.DurationFilter)
+	service.AddFilter(service.AiredFilter)
+	service.AddFilter(service.TypeFilter)
 
 	return &service, nil
 }

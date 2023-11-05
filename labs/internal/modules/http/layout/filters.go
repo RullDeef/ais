@@ -1,15 +1,23 @@
 package layout
 
-import "strings"
+import (
+	"anicomend/service/filter"
+	"strings"
+)
 
 type GenreOption struct {
-	ID       string
-	Label    string
-	Selected string
+	ID    string
+	Label string
+}
+
+type TypeOption struct {
+	ID    string
+	Label string
 }
 
 type FilterParams struct {
 	GenreOptions []GenreOption
+	TypeOptions  []TypeOption
 }
 
 func NewFilterParams() FilterParams {
@@ -54,13 +62,22 @@ func NewFilterParams() FilterParams {
 	for _, genre := range genres {
 		id := "genre-" + strings.ReplaceAll(strings.ToLower(genre), " ", "-")
 		genresOpts = append(genresOpts, GenreOption{
-			ID:       id,
-			Label:    genre,
-			Selected: "",
+			ID:    id,
+			Label: genre,
+		})
+	}
+
+	typesOpts := make([]TypeOption, 0, len(filter.AnimeTypes))
+	for _, animeType := range filter.AnimeTypes {
+		id := "type-" + strings.ReplaceAll(strings.ToLower(animeType), " ", "-")
+		typesOpts = append(typesOpts, TypeOption{
+			ID:    id,
+			Label: animeType,
 		})
 	}
 
 	return FilterParams{
 		GenreOptions: genresOpts,
+		TypeOptions:  typesOpts,
 	}
 }

@@ -99,6 +99,14 @@ func (c *CSVAnimeLoader) Load() ([]model.Anime, error) {
 	// minAired := time.Now().UTC()
 	// maxAired := time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC)
 
+	// types := make(map[string]struct{}, 0)
+	// TV
+	// OVA
+	// Special
+	// ONA
+	// Movie
+	// Music
+
 	if c.updateImageCDN {
 		for i, anime := range animes {
 			animes[i].ImageURL = strings.ReplaceAll(anime.ImageURL, "myanimelist.cdn-dena.com", "cdn.myanimelist.net")
@@ -107,6 +115,10 @@ func (c *CSVAnimeLoader) Load() ([]model.Anime, error) {
 			// }
 			// if anime.AiredFrom.After(maxAired) {
 			// 	maxAired = anime.AiredFrom
+			// }
+			// if _, ok := types[anime.Type]; !ok {
+			// 	println(anime.Type)
+			// 	types[anime.Type] = struct{}{}
 			// }
 		}
 	}

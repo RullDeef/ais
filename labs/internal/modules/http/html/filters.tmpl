@@ -40,7 +40,7 @@
         <button id='genres-toggle-button' class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#genres-list" type="button" onclick="toggleGenres()">Genres</button>
         <div class="form-check collapse" id="genres-list">
             {{ range .GenreOptions }}
-                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="genre" value="{{ .Label }}" onchange="genreUpdater(event)" />
+                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="genre" value="{{ .Label }}" onchange="checkboxUpdater(event)" />
                 <label>{{ .Label }}</label><br />
             {{ end }}
         </div>
@@ -57,6 +57,13 @@
             <label id="label-aired-min" for="aired-min">from 1942 y</label><br />
             <input id="input-aired-max" type="range" name="aired-max" id="aired-max" value="2019" min="1942" max="2019" oninput="airedUpdater(event)">
             <label id="label-aired-max" for="aired-max">until 2019 y</label><br />
+        </div>
+        <div>Types:</div>
+        <div>
+            {{ range .TypeOptions }}
+                <input id="{{ .ID }}" class="form-check-input filter-checkbox" type="checkbox" name="type" value="{{ .Label }}" onchange="checkboxUpdater(event)" />
+                <Label>{{ .Label }}</Label><br />
+            {{ end }}
         </div>
         <input class="btn btn-secondary" type="submit" value="apply" />
         <button class="btn btn-outline-danger" type="button" onclick="clearFilters()">clear all</button>
@@ -75,8 +82,7 @@ window.addEventListener('load', function(event) {
         location.reload()
     })
 
-    const genreInputs = document.querySelectorAll('.filter-checkbox')
-    for (let inp of genreInputs) {
+    for (let inp of document.querySelectorAll('.filter-checkbox')) {
         inp.checked = localStorage.getItem(inp.id) == 'true'
     }
 
@@ -96,10 +102,8 @@ function toggleGenres(event) {
     localStorage.setItem('toggle-genres', shown)
 }
 
-function genreUpdater(event) {
-    const key = event.target.id
-    const value = event.target.checked
-    localStorage.setItem(key, value)
+function checkboxUpdater(event) {
+    localStorage.setItem(event.target.id, event.target.checked)
 }
 
 function durationUpdater(event) {
