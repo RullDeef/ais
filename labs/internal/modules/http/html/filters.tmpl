@@ -51,6 +51,13 @@
             <input id="input-duration-max" type="range" name="duration-max" id="duration-max" value="163" min="0" max="163" oninput="durationUpdater(event)">
             <label id="label-duration-max" for="duration-max">at most 163 min.</label><br />
         </div>
+        <div>Episode duration (category):</div>
+        <div>
+            {{ range .DurationCategories }}
+                <input id="input-duration-cat-{{ .ID }}" class="filter-checkbox" type="checkbox" name="duration-cat" value="{{ .Label }}" onchange="checkboxUpdater(event)">
+                <label>{{ .Label }}</label><br />
+            {{ end }}
+        </div>
         <div>Aired date:</div>
         <div data-role="rangeslider">
             <input id="input-aired-min" type="range" name="aired-min" id="aired-min" value="1942" min="1942" max="2019" oninput="airedUpdater(event)">

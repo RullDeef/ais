@@ -10,14 +10,20 @@ type GenreOption struct {
 	Label string
 }
 
+type DurationCategory struct {
+	ID    string
+	Label string
+}
+
 type TypeOption struct {
 	ID    string
 	Label string
 }
 
 type FilterParams struct {
-	GenreOptions []GenreOption
-	TypeOptions  []TypeOption
+	GenreOptions       []GenreOption
+	DurationCategories []DurationCategory
+	TypeOptions        []TypeOption
 }
 
 func NewFilterParams() FilterParams {
@@ -58,6 +64,17 @@ func NewFilterParams() FilterParams {
 		"Mecha",
 	}
 
+	durations := []DurationCategory{
+		{ID: "very-short", Label: "очень короткая"},
+		{ID: "short", Label: "короткая"},
+		{ID: "not-long", Label: "не долгая"},
+		{ID: "not-very-long", Label: "не очень долгая"},
+		{ID: "not-very-short", Label: "не очень короткая"},
+		{ID: "not-short", Label: "не короткая"},
+		{ID: "long", Label: "долгая"},
+		{ID: "very-long", Label: "очень долгая"},
+	}
+
 	genresOpts := make([]GenreOption, 0, len(genres))
 	for _, genre := range genres {
 		id := "genre-" + strings.ReplaceAll(strings.ToLower(genre), " ", "-")
@@ -77,7 +94,8 @@ func NewFilterParams() FilterParams {
 	}
 
 	return FilterParams{
-		GenreOptions: genresOpts,
-		TypeOptions:  typesOpts,
+		GenreOptions:       genresOpts,
+		DurationCategories: durations,
+		TypeOptions:        typesOpts,
 	}
 }

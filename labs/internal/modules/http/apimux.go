@@ -89,6 +89,13 @@ func (am *ApiMux) applyFilters(c *gin.Context) {
 	am.service.DurationFilter.SetMin(form.DurationMin)
 	am.service.DurationFilter.SetMax(form.DurationMax)
 
+	am.service.CatDurFilter.ResetState()
+	for _, cat := range form.DurationCat {
+		if err := am.service.CatDurFilter.AddCategory(cat); err != nil {
+			am.logger.Error(err)
+		}
+	}
+
 	am.service.AiredFilter.ResetState()
 	am.service.AiredFilter.SetMinYear(form.AiredMin)
 	am.service.AiredFilter.SetMaxYear(form.AiredMax)
@@ -105,6 +112,7 @@ type FiltersForm struct {
 	Genres      []string `form:"genre"`
 	DurationMin int      `form:"duration-min"`
 	DurationMax int      `form:"duration-max"`
+	DurationCat []string `form:"duration-cat"`
 	AiredMin    int      `form:"aired-min"`
 	AiredMax    int      `form:"aired-max"`
 	Types       []string `form:"type"`
