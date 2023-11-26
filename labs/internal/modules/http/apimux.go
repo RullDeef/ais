@@ -64,6 +64,7 @@ func (am *ApiMux) updateMark(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 	case "clear":
 		am.service.ClearPreferenceMark(animeId)
+		c.Status(http.StatusNoContent)
 	default:
 		am.logger.Error("failed to parse mark:", mark)
 		c.AbortWithStatus(http.StatusBadRequest)
