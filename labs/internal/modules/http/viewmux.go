@@ -29,6 +29,7 @@ func (am *ViewMux) AssignHandlers(group *gin.RouterGroup) {
 	group.GET("/animes", am.getAnimesPage)
 	group.GET("/preferences", am.getPrefernces)
 	group.GET("/recomendations", am.getRecomendations)
+	group.GET("/chat", am.getChatBotPage)
 	group.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/animes")
 	})
@@ -108,4 +109,9 @@ func (am *ViewMux) getRecomendations(c *gin.Context) {
 		NoPreferences: len(animes) == 0,
 		FilterParams:  layout.NewFilterParams(),
 	})
+}
+
+func (am *ViewMux) getChatBotPage(c *gin.Context) {
+	c.Status(http.StatusOK)
+	layout.ChatLayout(c.Writer, layout.ChatLayoutParams{})
 }

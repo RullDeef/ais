@@ -1,0 +1,118 @@
+{{ define "title" }}
+    Anime List
+{{ end }}
+
+{{ define "header" }}
+<div class="container">
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+        <a href="/animes" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            <span class="fs-4">Anicomend</span>
+        </a>
+        <ul class="nav nav-pills me-3">
+            <li class="nav-item">
+                <a href="/animes" class="nav-link">Animes</a>
+            </li>
+            <li class="nav-item">
+                <a href="/preferences" class="nav-link">my prefs</a>
+            </li>
+            <li class="nav-item">
+                <a href="/recomendations" class="nav-link">recomendations</a>
+            </li>
+            <li class="nav-item">
+                <a href="/chat" class="nav-link active">ChatBot</a>
+            </li>
+        </ul>
+        <form action="#" class="nav">
+            <span class="input-group rounded">
+                <input type="text" name="query" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" disabled />
+                <button type="submit" class="btn btn-outline-secondary input-group-text border-0" id="search-addon">
+                    <i class="fas fa-search"></i>
+                </button>
+            </span>
+        </form>
+    </header>
+</div>
+{{ end }}
+
+{{ define "content" }}
+<div class="container">
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            background-color: #abd;
+        }
+    </style>
+    <div class="mb-3 p-3 rounded" style="background-color: #f4f4f4; height: 70vh; overflow-x: hidden; overflow-y: scroll">
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is next AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
+        </div>
+        </br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is next AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
+        </div>
+        </br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is next AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
+        </div>
+        </br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is next AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
+        </div>
+        </br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+            This is next AI ChatBot response.
+        </div>
+        <br />
+        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
+        </div>
+        </br />
+    </div>
+    <div class="input-group rounded">
+        <input class="form-control rounded" type="text" />
+        <button class="btn btn-primary"><i class="fas fa-level-up"></i></button>
+    </div>
+</div>
+{{ end }}
