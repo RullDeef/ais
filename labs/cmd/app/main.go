@@ -4,6 +4,7 @@ import (
 	"anicomend/internal/modules/csv"
 	"anicomend/internal/modules/http"
 	"anicomend/internal/modules/logger"
+	"anicomend/internal/modules/nlp"
 	"anicomend/service"
 	"net"
 	"strconv"
@@ -15,6 +16,8 @@ const (
 	datasetPath = "anime_cleaned.csv"
 	defaultHost = ""
 	defaultPort = 8080
+
+	nlpBaseURL = "http://localhost:8085/"
 )
 
 func main() {
@@ -24,11 +27,16 @@ func main() {
 				func() string { return datasetPath },
 				fx.ResultTags(`name:"dataset-path"`),
 			),
-			service.NewAnimeService,
+			fx.Annotate(
+				func() string { return nlpBaseURL },
+				fx.ResultTags(`name:"nlp-base-url"`),
+			),
 		),
 		logger.Module,
 		csv.Module,
 		http.Module,
+		nlp.Module,
+		service.Module,
 		fx.Invoke(func(s *http.Server) {
 			s.Run(net.JoinHostPort(defaultHost, strconv.FormatInt(defaultPort, 10)))
 		}),

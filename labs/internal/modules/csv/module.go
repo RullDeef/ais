@@ -9,10 +9,9 @@ import (
 var Module = fx.Module("csv",
 	fx.Provide(
 		fx.Annotate(
-			func(filename string) model.AnimeLoader {
-				return NewAnimeLoader(filename)
-			},
+			NewAnimeLoader,
 			fx.ParamTags(`name:"dataset-path"`),
 		),
+		func(loader *CSVAnimeLoader) model.AnimeLoader { return loader },
 	),
 )
