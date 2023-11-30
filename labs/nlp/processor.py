@@ -35,7 +35,6 @@ def parse_command(command_string: str):
             return cmd()
     else:
         print('could not find any command')
-        
 
 
 class CommandServerHandler(server.BaseHTTPRequestHandler):
@@ -52,7 +51,7 @@ class CommandServerHandler(server.BaseHTTPRequestHandler):
             cmd = command # parse_command(command)
 
             self.send_response(http.HTTPStatus.OK)
-            self.send_header('Content-Type', 'aplication/json')
+            self.send_header('Content-Type', 'text/plain')
             self.end_headers()
             self.wfile.write(bytes(cmd, 'utf-8'))
 
@@ -60,6 +59,9 @@ class CommandServerHandler(server.BaseHTTPRequestHandler):
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR, 'failed to process request')
 
 if __name__ == "__main__":
+    import sys
+    sys.stdout = sys.stderr
+    
     # тест
     for cmd_string in '''\
     '''.splitlines():

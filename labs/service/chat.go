@@ -1,6 +1,7 @@
 package service
 
 import (
+	"anicomend/internal/modules/nlp"
 	"anicomend/model"
 	"errors"
 	"slices"
@@ -16,6 +17,7 @@ type ChatService struct {
 	history []*ChatMessage
 
 	animeService *AnimeService
+	nlpService   *nlp.NLPService
 	logger       *zap.SugaredLogger
 }
 
@@ -25,10 +27,11 @@ type ChatMessage struct {
 	Animes   []*model.Anime
 }
 
-func NewChatService(logger *zap.SugaredLogger, animeService *AnimeService) *ChatService {
+func NewChatService(logger *zap.SugaredLogger, animeService *AnimeService, nlpService *nlp.NLPService) *ChatService {
 	return &ChatService{
 		history:      nil,
 		animeService: animeService,
+		nlpService:   nlpService,
 		logger:       logger,
 	}
 }
@@ -46,9 +49,25 @@ func (cs *ChatService) PostMessage(message string) (*ChatMessage, error) {
 		Animes:   nil,
 	})
 
-	return cs.buildResponse(message)
+	resp, err := cs.buildResponse(message)
+	if err == nil {
+		cs.history = append(cs.history, resp)
+	}
+
+	return resp, err
 }
 
 func (cs *ChatService) buildResponse(message string) (*ChatMessage, error) {
-	return nil, ErrServiceUnavailable
+	resp, err := cs.nlpService.Request(message)
+	if err != nil {
+		cs.logger.Errorw("nlp request", "err", err, "message", message)
+		return nil, ErrServiceUnavailable
+	}
+
+	// TODO: parse tags
+
+	return &ChatMessage{
+		FromUser: false,
+		Text:     resp,
+	}, nil
 }
