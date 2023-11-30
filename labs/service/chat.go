@@ -3,6 +3,7 @@ package service
 import (
 	"anicomend/model"
 	"errors"
+	"slices"
 
 	"go.uber.org/zap"
 )
@@ -32,7 +33,11 @@ func NewChatService(logger *zap.SugaredLogger, animeService *AnimeService) *Chat
 	}
 }
 
-func (cs *ChatService) PostMessage(message string, onDone func(*ChatMessage, error)) {
+func (cs *ChatService) GetHistory() []*ChatMessage {
+	return slices.Clone(cs.history)
+}
+
+func (cs *ChatService) PostMessage(message string) (*ChatMessage, error) {
 	cs.logger.Infow("PostMessage", "message", message)
 
 	cs.history = append(cs.history, &ChatMessage{
@@ -41,8 +46,7 @@ func (cs *ChatService) PostMessage(message string, onDone func(*ChatMessage, err
 		Animes:   nil,
 	})
 
-	resp, err := cs.buildResponse(message)
-	onDone(resp, err)
+	return cs.buildResponse(message)
 }
 
 func (cs *ChatService) buildResponse(message string) (*ChatMessage, error) {

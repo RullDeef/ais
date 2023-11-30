@@ -48,71 +48,82 @@
             background-color: #abd;
         }
     </style>
-    <div class="mb-3 p-3 rounded" style="background-color: #f4f4f4; height: 70vh; overflow-x: hidden; overflow-y: scroll">
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+    <div id="history" class="mb-3 p-3 rounded" style="background-color: #f4f4f4; height: 70vh; overflow-x: hidden; overflow-y: scroll">
+        <!-- <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
             This is AI ChatBot response.
         </div>
         <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
+        <div class="mb-2 p-2 d-inline-block bot-message">
             This is next AI ChatBot response.
         </div>
         <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
+        <div class="mb-2 p-2 d-inline-block user-message">
             This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
         </div>
-        </br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is next AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
-            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
-        </div>
-        </br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is next AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
-            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
-        </div>
-        </br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is next AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
-            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
-        </div>
-        </br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #fff; border-radius: 1em 1em 1em 0">
-            This is next AI ChatBot response.
-        </div>
-        <br />
-        <div class="mb-2 p-2 d-inline-block" style="background: #ccddee; border-radius: 1em 1em 1em 0">
-            This is your message. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline. Possibly multiline.
-        </div>
-        </br />
+        </br /> -->
     </div>
-    <div class="input-group rounded">
-        <input class="form-control rounded" type="text" />
-        <button class="btn btn-primary"><i class="fas fa-level-up"></i></button>
-    </div>
+    <form id="send-form" action="#">
+        <div class="input-group rounded">
+            <input id="message-box" class="form-control rounded" type="text" />
+            <button class="btn btn-primary" type="submit"><i class="fas fa-level-up"></i></button>
+        </div>
+    </form>
 </div>
+
+<style>
+.bot-message {
+    background: #fff;
+    border-radius: 1em 1em 1em 0;
+}
+
+.bot-error {
+    background: #f7d4d4;
+    color: red;
+    border-radius: 1em 1em 1em 0;
+}
+
+.user-message {
+    background: #ccddee;
+    border-radius: 1em 1em 1em 0;
+}
+</style>
+
+<script>
+// interactive chat implementation here
+var historyElem
+
+addEventListener('load', async function() {
+    historyElem = document.querySelector('#history')
+
+    const messageBox = document.querySelector('#message-box')
+    document.querySelector('#send-form').addEventListener('submit', sendMessage)
+    function sendMessage(event) {
+        event.preventDefault()
+        if (messageBox.value == '')
+            return
+        addChatMessageToHistory(messageBox.value, true)
+        askChatBot(messageBox.value)
+        messageBox.value = ''
+    }
+
+    // load all history here
+    const history = await fetch('/api/chat/history')
+    historyElem.innerHTML = await history.text()
+})
+
+function addChatMessageToHistory(message, fromUser) {
+    if (fromUser) {
+        historyElem.innerHTML += `<div class="mb-2 p-2 d-inline-block user-message">${message}</div><br/>`
+    } else {
+        historyElem.innerHTML += `<div class="mb-2 p-2 d-inline-block bot-message">${message}</div><br/>`
+    }
+
+    historyElem.scrollTop = historyElem.scrollHeight;
+}
+
+async function askChatBot(message) {
+    const resp = await fetch(`/api/chat?query=${encodeURI(message)}`)
+    historyElem.innerHTML += await resp.text()
+}
+</script>
 {{ end }}

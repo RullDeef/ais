@@ -7,6 +7,7 @@ import (
 	"anicomend/internal/modules/nlp"
 	"anicomend/service"
 	"net"
+	"os"
 	"strconv"
 
 	"go.uber.org/fx"
@@ -16,8 +17,10 @@ const (
 	datasetPath = "anime_cleaned.csv"
 	defaultHost = ""
 	defaultPort = 8080
+)
 
-	nlpBaseURL = "http://localhost:8085/"
+var (
+	nlpBaseURL = getEnv("NLP_BASE_URL", "http://localhost:8085/")
 )
 
 func main() {
@@ -43,4 +46,12 @@ func main() {
 	)
 
 	app.Run()
+}
+
+func getEnv(name, def string) string {
+	val := os.Getenv(name)
+	if val == "" {
+		val = def
+	}
+	return val
 }

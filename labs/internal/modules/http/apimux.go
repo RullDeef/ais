@@ -1,6 +1,7 @@
 package http
 
 import (
+	"anicomend/internal/modules/http/dto"
 	"anicomend/service"
 	"bytes"
 	"encoding/json"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -16,12 +18,14 @@ import (
 type ApiMux struct {
 	logger  *zap.SugaredLogger
 	service *service.AnimeService
+	chat    *service.ChatService
 }
 
-func NewApiMux(logger *zap.SugaredLogger, service *service.AnimeService) *ApiMux {
+func NewApiMux(logger *zap.SugaredLogger, service *service.AnimeService, chat *service.ChatService) *ApiMux {
 	return &ApiMux{
 		logger:  logger,
 		service: service,
+		chat:    chat,
 	}
 }
 
@@ -35,6 +39,12 @@ func (am *ApiMux) AssignHandlers(routerGroup *gin.RouterGroup) {
 
 	// /api/filter POST method
 	routerGroup.POST("/filter", am.applyFilters)
+
+	// /api/chat/history
+	routerGroup.GET("/chat/history", am.chatHistory)
+
+	// /api/chat?query=...
+	routerGroup.GET("/chat", am.chatQuery)
 }
 
 func (am *ApiMux) getPage(c *gin.Context) {
@@ -117,4 +127,31 @@ type FiltersForm struct {
 	AiredMin    int      `form:"aired-min"`
 	AiredMax    int      `form:"aired-max"`
 	Types       []string `form:"type"`
+}
+
+func (am *ApiMux) chatHistory(c *gin.Context) {
+	history := am.chat.GetHistory()
+
+	historyHTMLs := make([]string, len(history))
+	for i, msg := range history {
+		historyHTMLs[i] = dto.ChatMessageToHTML(msg)
+	}
+	historyHTML := strings.Join(historyHTMLs, "")
+
+	c.Status(http.StatusOK)
+	c.Writer.WriteString(historyHTML)
+}
+
+func (am *ApiMux) chatQuery(c *gin.Context) {
+	query := c.Query("query")
+	resp, err := am.chat.PostMessage(query)
+
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		c.Writer.WriteString(dto.ChatErrorToHTML(err))
+		return
+	}
+
+	c.Status(http.StatusOK)
+	c.Writer.WriteString(dto.ChatMessageToHTML(resp))
 }
