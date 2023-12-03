@@ -9,13 +9,16 @@ import command
 context = UserContext()
 
 morph = pymorphy2.MorphAnalyzer()
-keep_stopwords = ('чего', 'есть', 'много')
+keep_stopwords = ('чего', 'есть', 'много', 'не')
 stopwords = list(filter(lambda w: w not in keep_stopwords, stopwords.words('russian')))
+
+stopwords += ['также']
 
 commands = [
     command.TotalInfoCommand(),
     command.GenreInfoCommand(morph),
-    command.GenreLikeCommand(),
+    command.GenreLikeCommand(morph, context),
+    command.GenreDislikeCommand(morph, context),
 ]
 
 # Предполагается, что команда состоит из одного предложения

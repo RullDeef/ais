@@ -14,12 +14,14 @@ class PreferenceSet:
     def like(self, item):
         if item not in self.__likes:
             self.__likes.append(item)
-            self.__dislikes.remove(item)
+            if item in self.__dislikes:
+                self.__dislikes.remove(item)
     
     def dislike(self, item):
         if item not in self.__dislikes:
             self.__dislikes.append(item)
-            self.__likes.remove(item)
+            if item in self.__likes:
+                self.__likes.remove(item)
     
     def like_many(self, items):
         for item in items:

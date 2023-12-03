@@ -1,7 +1,8 @@
 import pymorphy2
 from abc import ABC, abstractmethod
 from typing import Optional
-from genreproc import get_genre, genre_info
+from genreproc import get_genre, get_genres, genre_info
+from user import UserContext
 
 
 class Command(ABC):
@@ -71,13 +72,46 @@ class GenreInfoCommand(Command):
 
 
 class GenreLikeCommand(Command):
-    def __init__(self):
+    def __init__(self, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
         super().__init__('genre-like')
+        self.__morph = morph
+        self.__user_context = user_context
 
     def check(self, stems) -> float:
-        # TODO
-        return 0.0
+        # if there is no genre in message - not this command
+        sim, genre = get_genre(stems)
+        if sim < 0.6:
+            return 0.0
+        tags = (('любить',), ('нравиться',), ('понравиться',), ('хотеть',), ('хотеть', 'смотреть'), ('хотеть', 'посмотреть'))
+        tag_val = tags_check(stems, tags)
+        anti_tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
+        anti_tag_val = tags_check(stems, anti_tags)
+        return max(tag_val - anti_tag_val, 0)
 
     def apply(self, tokens) -> str:
-        # TODO
-        return ''
+        stems = [self.__morph.normal_forms(t)[0] for t in tokens]
+        genres = get_genres(stems, 0.6)
+        self.__user_context.like_genres(genres)
+        return f'Вам понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить: <recomended-anime>'
+
+
+class GenreDislikeCommand(Command):
+    def __init__(self, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
+        super().__init__('genre-dislike')
+        self.__morph = morph
+        self.__user_context = user_context
+
+    def check(self, stems) -> float:
+        # if there is no genre in message - not this command
+        sim, genre = get_genre(stems)
+        if sim < 0.6:
+            return 0.0
+        tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
+        tag_val = tags_check(stems, tags)
+        return tag_val
+
+    def apply(self, tokens) -> str:
+        stems = [self.__morph.normal_forms(t)[0] for t in tokens]
+        genres = get_genres(stems, 0.6)
+        self.__user_context.dislike_genres(genres)
+        return f'Вам не понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить: <recomended-anime>'

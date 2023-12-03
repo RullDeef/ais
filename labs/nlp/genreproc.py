@@ -75,16 +75,33 @@ infos = {
     "Mecha": "Аниме в жарне меха (Mecha) представляет боевые и гигантские роботы, механические сражения и научно-фантастические истории.",
 }
 
+baits = [
+    'любить',
+    'нравиться',
+    'посмотреть',
+]
 
 def is_genre(s: str) -> tuple[float, str]:
     sim_map = [
         (max(str_similarity(s, g) for g in gg), gg[0])
         for gg in genres]
-    return max(sim_map, key=lambda s: s[0])
+    bait_val = max(str_similarity(s, b) for b in baits)
+    res = max(sim_map, key=lambda s: s[0])
+    if res[0] <= bait_val:
+        return 0, ''
+    return res
 
 
 def get_genre(tokens: list[str]) -> tuple[float, str]:
-    return max([is_genre(g) for g in tokens], key=lambda s: s[0])
+    gs = [is_genre(g) for g in tokens]
+    if len(gs) == 0:
+        return 0, ''
+    return max(gs, key=lambda s: s[0])
+
+
+def get_genres(tokens: list[str], assurance: float) -> list[str]:
+    gs = [is_genre(g) for g in tokens]
+    return list(set([g[1] for g in gs if g[0] >= assurance]))
 
 
 def genre_info(genre: str) -> str:
