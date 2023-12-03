@@ -108,7 +108,8 @@ addEventListener('load', async function() {
 
     // load all history here
     const history = await fetch('/api/chat/history')
-    historyElem.innerHTML = await history.text()
+    const text = await history.text()
+    historyElem.innerHTML = text.replaceAll('\n', '<br />')
 })
 
 function addChatMessageToHistory(message, fromUser) {

@@ -53,23 +53,35 @@ class ApiServer:
     
     def get_animes(self) -> list[AnimeDTO]:
         resp = requests.get(f'{self.__base_url}/animes')
+        if not resp.ok:
+            print(resp.reason)
         return [AnimeDTO(**values) for values in resp.json()]
     
     def get_filtered_animes(self, page: int) -> list[AnimeDTO]:
         resp = requests.get(f'{self.__base_url}/animes', {'page': page})
+        if not resp.ok:
+            print(resp.reason)
         return [AnimeDTO(**values) for values in resp.json()]
 
     def like_anime(self, anime_id: int):
-        requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'fav'})
+        resp = requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'fav'})
+        if not resp.ok:
+            print(resp.reason)
     
     def dislike_anime(self, anime_id: int):
-        requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'unfav'})
+        resp = requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'unfav'})
+        if not resp.ok:
+            print(resp.reason)
     
     def clear_preference(self, anime_id: int):
-        requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'clear'})
+        resp = requests.get(f'{self.__base_url}/animes/{anime_id}', {'mark': 'clear'})
+        if not resp.ok:
+            print(resp.reason)
 
     def get_recomendations(self, page: int) -> list[AnimeDTO]:
         resp = requests.get(f'{self.__base_url}/recomendations', {'page': page})
+        if not resp.ok:
+            print(resp.reason)
         data = resp.json()
         if data is None:
             return []
@@ -82,24 +94,36 @@ class AnimeService:
         self.__animes = apiServer.get_animes()
     
     def find_anime_exact(self, query: str) -> Optional[AnimeDTO]:
+        min_assurance = 0.7
         animes = [(str_similarity(a.title, query), a) for a in self.__animes]
+        assurance, anime = max(animes, key=lambda a: a[0])
         animes = list(filter(lambda s: s[0] > 0.7, animes))
-        if len(animes) == 0:
+        if assurance < min_assurance:
             return None
-        animes = sorted(animes, key=lambda s: -s[0])
-        return animes[0][1]
+        return anime
     
     def find_anime_fuzzy(self, query: str) -> list[AnimeDTO]:
+        min_assurance = 0.5
         animes = [(str_similarity(a.title, query), a) for a in self.__animes]
-        animes = list(filter(lambda s: s[0] > 0.5, animes))
-        animes = sorted(animes, key=lambda s: -s[0])
+        animes = list(filter(lambda s: s[0] > min_assurance, animes))
+        animes.sort(key=lambda a: a[0], reverse=True)
         return [a[1] for a in animes]
+    
+    def like_anime(self, anime_id: int):
+        self.__api.like_anime(anime_id)
+    
+    def dislike_anime(self, anime_id: int):
+        self.__api.dislike_anime(anime_id)
     
     def get_recomendations(self) -> list[AnimeDTO]:
         recs = self.__api.get_recomendations(1)
         if len(recs) == 0:
             recs = self.__api.get_filtered_animes(1)
         return recs
+    
+    def get_recomendations_str(self) -> str:
+        return "\n".join([f'{i+1}) [ID#{a.id}] {a.title}'
+                          for i, a in enumerate(self.get_recomendations())])
 
 
 if __name__ == "__main__":
@@ -112,4 +136,3 @@ if __name__ == "__main__":
     query = 'Блич'
     anime = service.find_anime_exact(query)
     print(anime)
-

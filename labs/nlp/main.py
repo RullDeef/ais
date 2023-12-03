@@ -1,5 +1,6 @@
 import os
 import http
+import traceback
 from http import server
 from urllib.parse import urlparse, parse_qs
 import processor
@@ -23,8 +24,9 @@ class CommandServerHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(bytes(cmd, 'utf-8'))
 
-        except:
+        except Exception as e:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR, 'failed to process request')
+            traceback.print_exc()
 
 
 def run_server():

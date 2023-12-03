@@ -39,6 +39,17 @@ translite = {
 }
 
 
+def cached(func):
+    cache = dict()
+    def f(s: str) -> str:
+        if s in cache.keys():
+            return cache[s]
+        val = func(s)
+        cache[s] = val
+        return val
+    return f
+
+@cached
 def transliterate(s: str) -> str:
     found = True
     while found:
@@ -52,15 +63,13 @@ def transliterate(s: str) -> str:
 
 
 def str_distance(s1: str, s2: str) -> float:
-    distances = [
-        [0 for j in range(len(s2) + 1)]
-        for i in range(len(s1) + 1)
-    ]
+    n1, n2 = len(s1), len(s2)
+    distances = [[0 for j in range(n2 + 1)] for i in range(n1 + 1)]
 
-    for t1 in range(len(s1) + 1):
+    for t1 in range(n1 + 1):
         distances[t1][0] = t1
 
-    for t2 in range(len(s2) + 1):
+    for t2 in range(n2 + 1):
         distances[0][t2] = t2
         
     ins_cost = 1
@@ -68,8 +77,8 @@ def str_distance(s1: str, s2: str) -> float:
     repl_cost = 0.6
     
     a, b, c = 0, 0, 0
-    for t1 in range(1, len(s1) + 1):
-        for t2 in range(1, len(s2) + 1):
+    for t1 in range(1, n1 + 1):
+        for t2 in range(1, n2 + 1):
             if s1[t1-1] == s2[t2-1]:
                 distances[t1][t2] = distances[t1 - 1][t2 - 1]
             else:
@@ -83,7 +92,7 @@ def str_distance(s1: str, s2: str) -> float:
                 else:
                     distances[t1][t2] = c + repl_cost
     
-    return distances[len(s1)][len(s2)]
+    return distances[n1][n2]
 
 
 def str_similarity(s1: str, s2: str) -> float:

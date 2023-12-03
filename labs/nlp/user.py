@@ -1,3 +1,5 @@
+import animeapi
+
 class PreferenceSet:
     def __init__(self):
         self.__likes = []
@@ -33,7 +35,8 @@ class PreferenceSet:
 
 
 class UserContext:
-    def __init__(self):
+    def __init__(self, anime_service: animeapi.AnimeService):
+        self.__service = anime_service
         self.__anime_prefs = PreferenceSet()
         self.__genre_prefs = PreferenceSet()
         self.__filters = []
@@ -45,9 +48,25 @@ class UserContext:
     @property
     def genre_prefs(self):
         return self.__genre_prefs
-    
+
     def like_genres(self, genres: list[str]):
         self.__genre_prefs.like_many(genres)
     
     def dislike_genres(self, genres: list[str]):
         self.__genre_prefs.dislike_many(genres)
+
+    def like_anime(self, anime_id: int):
+        if anime_id not in self.__anime_prefs.likes:
+            if anime_id in self.__anime_prefs.dislikes:
+                self.__service.clear_anime_preference(anime_id)
+            else:
+                self.__service.like_anime(anime_id)
+        self.__anime_prefs.like(anime_id)
+
+    def dislike_anime(self, anime_id: int):
+        if anime_id not in self.__anime_prefs.dislikes:
+            if anime_id in self.__anime_prefs.likes:
+                self.__service.clear_anime_preference(anime_id)
+            else:
+                self.__service.dislike_anime(anime_id)
+        self.__anime_prefs.dislike(anime_id)

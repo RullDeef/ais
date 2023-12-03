@@ -1,47 +1,33 @@
-import pymorphy2
-from nltk.corpus import stopwords
-from nltk.util import ngrams
-from nltk.tokenize import word_tokenize
-from user import UserContext
 import animeapi
 import command
+from user import UserContext
+from parsedquery import ParsedQuery
+from morph import morph
 
-apiServer = animeapi.ApiServer('localhost', 8080)
-animeService = animeapi.AnimeService(apiServer)
+api_server = animeapi.ApiServer('localhost', 8080)
+anime_service = animeapi.AnimeService(api_server)
 
 # user contextual info about what he likes and dislikes
-context = UserContext()
-
-morph = pymorphy2.MorphAnalyzer()
-keep_stopwords = ('чего', 'есть', 'много', 'не')
-stopwords = list(filter(lambda w: w not in keep_stopwords, stopwords.words('russian')))
-
-stopwords += ['также']
+context = UserContext(anime_service)
 
 commands = [
     command.TotalInfoCommand(),
     command.GenreInfoCommand(morph),
-    command.GenreLikeCommand(animeService, morph, context),
-    command.GenreDislikeCommand(animeService, morph, context),
+    command.GenreLikeCommand(anime_service, morph, context),
+    command.GenreDislikeCommand(anime_service, morph, context),
+    command.AnimeLikeCommand(anime_service, context),
 ]
 
 # Предполагается, что команда состоит из одного предложения
 def parse_command(message: str) -> str:
-    print('input:', message)
-    tokens = word_tokenize(message)
-    print('tokens:', tokens)
-    tokens = list(filter(lambda w: w not in stopwords, tokens))
-    print('filtered tokens:', tokens)
-    stems = [morph.normal_forms(t) for t in tokens]
-    print('stems:', stems)
-    stems = [s[0] for s in stems]
+    query = ParsedQuery.parse(message)
     
-    assurances = sorted([(cmd.check(stems), cmd) for cmd in commands], key=lambda a: -a[0])
+    assurances = sorted([(cmd.check(query), cmd) for cmd in commands], key=lambda a: -a[0])
     print('assurances:', [(round(score, 2), cmd.tag) for score, cmd in assurances])
-    assurances = [a for a in assurances if a[0] > 0.5]
+    assurances = [a for a in assurances if a[0] >= 0.5]
     if len(assurances) == 0:
         print('not found command for message:', message)
         return 'Извините, я не смог распознать запрос.'
     cmd = assurances[0][1]
     print('command tag:', cmd.tag)
-    return cmd.apply(tokens)
+    return cmd.apply(query)
