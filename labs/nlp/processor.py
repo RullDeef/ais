@@ -29,10 +29,12 @@ def parse_command(message: str) -> str:
     print('stems:', stems)
     stems = [s[0] for s in stems]
     
-    assurances = [(cmd.check(stems), cmd) for cmd in commands if cmd.check(stems) > 0]
+    assurances = sorted([(cmd.check(stems), cmd) for cmd in commands], key=lambda a: -a[0])
+    print('assurances:', [(round(score, 2), cmd.tag) for score, cmd in assurances])
+    assurances = [a for a in assurances if a[0] > 0.5]
     if len(assurances) == 0:
         print('not found command for message:', message)
-        return 'Извините, я не смог распознать запрос'
+        return 'Извините, я не смог распознать запрос.'
     cmd = assurances[0][1]
     print('command tag:', cmd.tag)
     return cmd.apply(tokens)
