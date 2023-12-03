@@ -71,6 +71,10 @@ func (a *AnimeService) GetTotalPages() int {
 	return (len(a.getFilteredAnimes()) + ItemsPerPage - 1) / ItemsPerPage
 }
 
+func (a *AnimeService) GetAll() []model.Anime {
+	return a.animes
+}
+
 func (a *AnimeService) GetPage(page int) []model.Anime {
 	if a.searchState != nil {
 		return a.GetSearchPage(page)
@@ -195,6 +199,11 @@ func (a *AnimeService) GetSearchPage(page int) []model.Anime {
 func (a *AnimeService) GetRecomendationTotalPages() int {
 	a.regenerateRecomendations()
 	return (len(a.recomended) + ItemsPerPage - 1) / ItemsPerPage
+}
+
+func (a *AnimeService) GetAllRecomendations() []model.Anime {
+	a.regenerateRecomendations()
+	return a.recomended
 }
 
 func (a *AnimeService) GetRecomendationPage(page int) []model.Anime {

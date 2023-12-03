@@ -123,7 +123,9 @@ function addChatMessageToHistory(message, fromUser) {
 
 async function askChatBot(message) {
     const resp = await fetch(`/api/chat?query=${encodeURI(message)}`)
-    historyElem.innerHTML += await resp.text()
+    const text = await resp.text()
+
+    historyElem.innerHTML += text.replaceAll('\n', '<br />')
 }
 </script>
 {{ end }}

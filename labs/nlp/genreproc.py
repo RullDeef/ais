@@ -79,6 +79,7 @@ baits = [
     'любить',
     'нравиться',
     'посмотреть',
+    'хотеть',
 ]
 
 def is_genre(s: str) -> tuple[float, str]:

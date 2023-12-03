@@ -1,8 +1,8 @@
 import pymorphy2
 from abc import ABC, abstractmethod
-from typing import Optional
 from genreproc import get_genre, get_genres, genre_info
 from user import UserContext
+from animeapi import AnimeService
 
 
 class Command(ABC):
@@ -72,8 +72,9 @@ class GenreInfoCommand(Command):
 
 
 class GenreLikeCommand(Command):
-    def __init__(self, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
+    def __init__(self, anime_service: AnimeService, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
         super().__init__('genre-like')
+        self.__service = anime_service
         self.__morph = morph
         self.__user_context = user_context
 
@@ -86,18 +87,26 @@ class GenreLikeCommand(Command):
         tag_val = tags_check(stems, tags)
         anti_tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
         anti_tag_val = tags_check(stems, anti_tags)
-        return max(tag_val - anti_tag_val, 0)
+        return max(tag_val - 0.3 * anti_tag_val, 0)
 
     def apply(self, tokens) -> str:
         stems = [self.__morph.normal_forms(t)[0] for t in tokens]
         genres = get_genres(stems, 0.6)
         self.__user_context.like_genres(genres)
-        return f'Вам понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить: <recomended-anime>'
+        
+        recomendations = self.__service.get_recomendations()
+        recomendations = [f'{i+1}) [ID#{a.id}] {a.title}'
+                          for i, a in enumerate(recomendations)]
+        recomendations = "\n".join(recomendations)
+        res = f'Вам понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить:\n{recomendations}'
+        print(res)
+        return res
 
 
 class GenreDislikeCommand(Command):
-    def __init__(self, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
+    def __init__(self, anime_service: AnimeService, morph: pymorphy2.MorphAnalyzer, user_context: UserContext):
         super().__init__('genre-dislike')
+        self.__service = anime_service
         self.__morph = morph
         self.__user_context = user_context
 
@@ -114,4 +123,9 @@ class GenreDislikeCommand(Command):
         stems = [self.__morph.normal_forms(t)[0] for t in tokens]
         genres = get_genres(stems, 0.6)
         self.__user_context.dislike_genres(genres)
-        return f'Вам не понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить: <recomended-anime>'
+        
+        recomendations = self.__service.get_recomendations()
+        recomendations = [f'{i+1}) [ID#{a.id}] {a.title}'
+                          for i, a in enumerate(recomendations)]
+        recomendations = "\n".join(recomendations)
+        return f'Вам не понравились следующие жанры: {", ".join(genres)}. Вот, что я могу Вам предложить:\n{recomendations}'

@@ -2,6 +2,7 @@ package http
 
 import (
 	"anicomend/internal/modules/http/dto"
+	"anicomend/model"
 	"anicomend/service"
 	"bytes"
 	"encoding/json"
@@ -37,6 +38,9 @@ func (am *ApiMux) AssignHandlers(routerGroup *gin.RouterGroup) {
 	// /api/animes?page=N
 	routerGroup.GET("/animes", am.getPage)
 
+	// /api/recomendations?page=N
+	routerGroup.GET("/recomendations", am.getRecomendations)
+
 	// /api/filter POST method
 	routerGroup.POST("/filter", am.applyFilters)
 
@@ -48,12 +52,33 @@ func (am *ApiMux) AssignHandlers(routerGroup *gin.RouterGroup) {
 }
 
 func (am *ApiMux) getPage(c *gin.Context) {
-	page, err := strconv.ParseInt(c.Query("page"), 10, 64)
-	if err != nil || page < 1 {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
+	var animes []model.Anime
+	if pageStr, has := c.GetQuery("page"); !has {
+		animes = am.service.GetAll()
+	} else {
+		page, err := strconv.ParseInt(pageStr, 10, 64)
+		if err != nil || page < 1 {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		animes = am.service.GetPage(int(page))
 	}
-	animes := am.service.GetPage(int(page))
+	c.Status(http.StatusOK)
+	json.NewEncoder(c.Writer).Encode(animes)
+}
+
+func (am *ApiMux) getRecomendations(c *gin.Context) {
+	var animes []model.Anime
+	if pageStr, has := c.GetQuery("page"); !has {
+		animes = am.service.GetAllRecomendations()
+	} else {
+		page, err := strconv.ParseInt(pageStr, 10, 64)
+		if err != nil || page < 1 {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		animes = am.service.GetRecomendationPage(int(page))
+	}
 	c.Status(http.StatusOK)
 	json.NewEncoder(c.Writer).Encode(animes)
 }

@@ -3,7 +3,11 @@ from nltk.corpus import stopwords
 from nltk.util import ngrams
 from nltk.tokenize import word_tokenize
 from user import UserContext
+import animeapi
 import command
+
+apiServer = animeapi.ApiServer('localhost', 8080)
+animeService = animeapi.AnimeService(apiServer)
 
 # user contextual info about what he likes and dislikes
 context = UserContext()
@@ -17,8 +21,8 @@ stopwords += ['также']
 commands = [
     command.TotalInfoCommand(),
     command.GenreInfoCommand(morph),
-    command.GenreLikeCommand(morph, context),
-    command.GenreDislikeCommand(morph, context),
+    command.GenreLikeCommand(animeService, morph, context),
+    command.GenreDislikeCommand(animeService, morph, context),
 ]
 
 # Предполагается, что команда состоит из одного предложения
