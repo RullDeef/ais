@@ -112,7 +112,7 @@ class GenreDislikeCommand(Command):
             return 0.0
         tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
         tag_val = tags_check(query.stems, tags)
-        return tag_val
+        return (tag_val + sim) / 2
 
     def apply(self, query: ParsedQuery) -> str:
         genres = get_genres(query.stems, 0.6)
@@ -135,12 +135,6 @@ def extract_anime(service: AnimeService, tokens: list[str]) -> tuple[float, Anim
     anime = service.find_anime_exact(title)
     if anime is not None:
         return 1.0, anime
-    # for n in range(len(tokens), len(tokens)-2, -1):
-    #     for ngram in ngrams(tokens, n):
-    #         title = " ".join(ngram)
-    #         anime = service.find_anime_exact(title)
-    #         if anime is not None:
-    #             return 1.0, anime.title
     # fuzzy search
     max_anime, max_assurance = '', 0.0
     for n in range(len(tokens), 0, -1):
@@ -162,7 +156,34 @@ class AnimeLikeCommand(Command):
         self.__anime = None
     
     def check(self, query: ParsedQuery) -> float:
+        anti_tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
+        anti_tag_val = tags_check(query.stems, anti_tags)
         tags = (('любить',), ('нравиться',), ('понравиться',), ('хотеть',), ('хотеть', 'смотреть'), ('хотеть', 'посмотреть'))
+        tag_val = tags_check(query.stems, tags)
+        tag_val = max(0, tag_val - 0.3 * anti_tag_val)
+        if tag_val < 0.7:
+            return 0.0
+        assurance, anime = extract_anime(self.__service, query.tokens)
+        if assurance < 0.7:
+            return 0.0
+        self.__anime = anime
+        return max(0, assurance - 0.3 * anti_tag_val)
+
+    def apply(self, query: ParsedQuery) -> str:
+        self.__service.like_anime(self.__anime.id)
+        recs = self.__service.get_recomendations_str()
+        return f'Вам понравилось аниме {self.__anime.title}. Вот, что я могу Вам предложить:\n{recs}'
+
+
+class AnimeDislikeCommand(Command):
+    def __init__(self, anime_service: AnimeService, user_context: UserContext):
+        super().__init__('anime-dislike')
+        self.__service = anime_service
+        self.__user_context = user_context
+        self.__anime = None
+    
+    def check(self, query: ParsedQuery) -> float:
+        tags = (('не', 'любить'), ('не', 'нравиться'), ('не', 'понравиться'), ('не', 'хотеть'), ('не', 'хотеть', 'смотреть'), ('не', 'хотеть', 'посмотреть'))
         tag_val = tags_check(query.stems, tags)
         if tag_val < 0.7:
             return 0.0
@@ -173,6 +194,5 @@ class AnimeLikeCommand(Command):
         return assurance
 
     def apply(self, query: ParsedQuery) -> str:
-        self.__service.like_anime(self.__anime.id)
-        recs = self.__service.get_recomendations_str()
-        return f'Вам понравилось аниме {self.__anime.title}. Вот, что я могу Вам предложить:\n{recs}'
+        self.__service.dislike_anime(self.__anime.id)
+        return f'Вычеркнул {self.__anime.title} из списка рекомендаций.'

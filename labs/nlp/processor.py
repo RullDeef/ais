@@ -16,6 +16,7 @@ commands = [
     command.GenreLikeCommand(anime_service, morph, context),
     command.GenreDislikeCommand(anime_service, morph, context),
     command.AnimeLikeCommand(anime_service, context),
+    command.AnimeDislikeCommand(anime_service, context),
 ]
 
 # Предполагается, что команда состоит из одного предложения
