@@ -88,12 +88,22 @@ class ApiServer:
         return [AnimeDTO(**values) for values in data]
 
 
+anime_baits = (
+    "не очень",
+    "хранится",
+    "базе",
+)
+bait_threshold = 0.8
+
+
 class AnimeService:
     def __init__(self, apiServer: ApiServer):
         self.__api = apiServer
         self.__animes = apiServer.get_animes()
     
     def find_anime_exact(self, query: str) -> Optional[AnimeDTO]:
+        if self.__check_bait(query):
+            return None
         min_assurance = 0.7
         animes = [(str_similarity(a.title, query), a) for a in self.__animes]
         assurance, anime = max(animes, key=lambda a: a[0])
@@ -103,6 +113,8 @@ class AnimeService:
         return anime
     
     def find_anime_fuzzy(self, query: str) -> list[AnimeDTO]:
+        if self.__check_bait(query):
+            return []
         min_assurance = 0.5
         animes = [(str_similarity(a.title, query), a) for a in self.__animes]
         animes = list(filter(lambda s: s[0] > min_assurance, animes))
@@ -124,6 +136,10 @@ class AnimeService:
     def get_recomendations_str(self) -> str:
         return "\n".join([f'{i+1}) [ID#{a.id}] {a.title}'
                           for i, a in enumerate(self.get_recomendations())])
+
+    def __check_bait(self, query: str) -> bool:
+        res = max(str_similarity(s, query) for s in anime_baits)
+        return res > bait_threshold
 
 
 if __name__ == "__main__":
